@@ -103,7 +103,7 @@ userName:xxx
 password:xxx
 ```
 当数据传入后，首先进入数据库查询是否存在该用户，如果不存在则插入一条用户；如果存在则查看用户是否被禁用，如果未被禁用则登录成功
-登录成功后将用户id存入session中便于后续操作的执行
+登录成功后将用户信息和token值存入session中便于后续操作的执行，然后将用户信息和token值都返回给前端
 ```java
     public User login(@RequestBody Map<String,String> map, HttpSession session){
         String userName = map.get("userName");
