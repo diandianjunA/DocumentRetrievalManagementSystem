@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.SQLIntegrityConstraintViolationException;
 
 @ControllerAdvice(annotations = {RestController.class, Controller.class})
@@ -21,6 +22,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HaveDisabledException.class)
     public R<String> haveDisabledException(HaveDisabledException exception){
+        String message=exception.getMessage();
+        return R.error(message);
+    }
+
+    @ExceptionHandler(IOException.class)
+    public R<String> IOException(IOException exception){
         String message=exception.getMessage();
         return R.error(message);
     }
