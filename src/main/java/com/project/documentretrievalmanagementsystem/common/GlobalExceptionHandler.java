@@ -1,6 +1,7 @@
 package com.project.documentretrievalmanagementsystem.common;
 
 import com.project.documentretrievalmanagementsystem.exception.HaveDisabledException;
+import com.project.documentretrievalmanagementsystem.exception.PasswordWrongException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -9,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.sql.SQLIntegrityConstraintViolationException;
 
 @ControllerAdvice(annotations = {RestController.class, Controller.class})
 @ResponseBody
@@ -28,6 +28,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IOException.class)
     public R<String> IOException(IOException exception){
+        String message=exception.getMessage();
+        return R.error(message);
+    }
+
+    @ExceptionHandler(PasswordWrongException.class)
+    public R<String> PasswordWrongException(PasswordWrongException exception){
         String message=exception.getMessage();
         return R.error(message);
     }

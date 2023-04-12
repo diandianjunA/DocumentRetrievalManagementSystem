@@ -5,6 +5,7 @@ import com.project.documentretrievalmanagementsystem.common.R;
 import com.project.documentretrievalmanagementsystem.dto.UserDto;
 import com.project.documentretrievalmanagementsystem.entity.User;
 import com.project.documentretrievalmanagementsystem.exception.HaveDisabledException;
+import com.project.documentretrievalmanagementsystem.exception.PasswordWrongException;
 import com.project.documentretrievalmanagementsystem.mapper.UserMapper;
 import com.project.documentretrievalmanagementsystem.service.IUserService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.servlet.http.HttpSession;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -52,6 +54,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }else{
             if(user.getStatus()==0){
                 throw new HaveDisabledException("用户已被禁用");
+            }else if(!Objects.equals(user.getPassword(), password)){
+                throw new PasswordWrongException("密码错误");
             }else{
                 //将用户的信息存到session中，这样可以通过过滤器
                 //随机生成token作为登录令牌
