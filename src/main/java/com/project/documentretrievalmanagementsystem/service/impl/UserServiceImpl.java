@@ -2,6 +2,7 @@ package com.project.documentretrievalmanagementsystem.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.project.documentretrievalmanagementsystem.common.R;
+import com.project.documentretrievalmanagementsystem.dto.UserDto;
 import com.project.documentretrievalmanagementsystem.entity.User;
 import com.project.documentretrievalmanagementsystem.exception.HaveDisabledException;
 import com.project.documentretrievalmanagementsystem.mapper.UserMapper;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.servlet.http.HttpSession;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * <p>
@@ -37,14 +39,30 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             user.setPassword(password);
             user.setStatus(1);
             save(user);
-            return user;
+            //将用户的信息存到session中，这样可以通过过滤器
+            //随机生成token作为登录令牌
+            String token = UUID.randomUUID().toString();
+            UserDto userDto = new UserDto();
+            userDto.setToken(token);
+            userDto.setUserName(userName);
+            userDto.setPassword(password);
+            userDto.setStatus(1);
+            session.setAttribute(token,user);
+            return userDto;
         }else{
             if(user.getStatus()==0){
                 throw new HaveDisabledException("用户已被禁用");
             }else{
                 //将用户的信息存到session中，这样可以通过过滤器
-                session.setAttribute("user",user.getId());
-                return user;
+                //随机生成token作为登录令牌
+                String token = UUID.randomUUID().toString();
+                session.setAttribute(token,user);
+                UserDto userDto = new UserDto();
+                userDto.setToken(token);
+                userDto.setUserName(user.getUserName());
+                userDto.setPassword(user.getPassword());
+                userDto.setStatus(user.getStatus());
+                return userDto;
             }
         }
     }

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.AntPathMatcher;
 import com.project.documentretrievalmanagementsystem.common.BaseContext;
 import com.project.documentretrievalmanagementsystem.common.R;
+import org.springframework.util.StringUtils;
 
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
@@ -32,17 +33,20 @@ public class LoginCheckFilter implements Filter {
             filterChain.doFilter(request,response);
             return;
         }
-        //判断移动端用户是否登录
-        if(request.getSession().getAttribute("user")!=null){
-            //将id存到当前线程中
-            Long userId = (Long) request.getSession().getAttribute("user");
-            BaseContext.setCurrentId(userId);
-            //放行
-            filterChain.doFilter(request,response);
-            return;
+        String token = request.getHeader("authorization");
+        if(!StringUtils.isEmpty(token)){
+            //判断用户是否登录
+            if(request.getSession().getAttribute(token)!=null){
+                //将id存到当前线程中
+                Long userId = (Long) request.getSession().getAttribute(token);
+                BaseContext.setCurrentId(userId);
+                //放行
+                filterChain.doFilter(request,response);
+                return;
+            }
+            //如果未登录
+            response.getWriter().write(JSON.toJSONString(R.error("NOTLOGIN")));
         }
-        //如果未登录
-        response.getWriter().write(JSON.toJSONString(R.error("NOTLOGIN")));
     }
 
     /**

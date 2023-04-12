@@ -12,6 +12,62 @@
 - 用户模块
 - 文件控制模块
 
+## 初始化filter
+
+```java
+@WebFilter(filterName = "loginCheckFilter",urlPatterns = "/*")
+@Slf4j
+public class LoginCheckFilter implements Filter {
+    //路径匹配器，支持通配符
+    public static final AntPathMatcher PATH_MATCHER=new AntPathMatcher();
+
+    @Override
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+        HttpServletRequest request = (HttpServletRequest) servletRequest;
+        HttpServletResponse response = (HttpServletResponse) servletResponse;
+        String requestURI = request.getRequestURI();
+        //定义不需要处理的请求路径
+        String[] urls = {"/static/**","/user/login"};
+        boolean check = check(urls, requestURI);
+        if(check){
+            //放行
+            filterChain.doFilter(request,response);
+            return;
+        }
+        String token = request.getHeader("authorization");
+        if(!StringUtils.isEmpty(token)){
+            //判断用户是否登录
+            if(request.getSession().getAttribute(token)!=null){
+                //将id存到当前线程中
+                Long userId = (Long) request.getSession().getAttribute(token);
+                BaseContext.setCurrentId(userId);
+                //放行
+                filterChain.doFilter(request,response);
+                return;
+            }
+            //如果未登录
+            response.getWriter().write(JSON.toJSONString(R.error("NOTLOGIN")));
+        }
+    }
+
+    /**
+     * 路径匹配，检查本次请求是否需要放行
+     * @param urls
+     * @param requestURI
+     * @return
+     */
+    public boolean check(String[] urls , String requestURI){
+        for(String url:urls){
+            boolean match = PATH_MATCHER.match(url, requestURI);
+            if(match){
+                return true;
+            }
+        }
+        return false;
+    }
+}
+```
+
 ## 用户模块
 用户类定义
 
@@ -49,7 +105,7 @@ password:xxx
 当数据传入后，首先进入数据库查询是否存在该用户，如果不存在则插入一条用户；如果存在则查看用户是否被禁用，如果未被禁用则登录成功
 登录成功后将用户id存入session中便于后续操作的执行
 ```java
-public User login(@RequestBody Map<String,String> map, HttpSession session){
+    public User login(@RequestBody Map<String,String> map, HttpSession session){
         String userName = map.get("userName");
         String password = map.get("password");
         //查看该用户是否为新用户
@@ -63,14 +119,30 @@ public User login(@RequestBody Map<String,String> map, HttpSession session){
             user.setPassword(password);
             user.setStatus(1);
             save(user);
-            return user;
+            //将用户的信息存到session中，这样可以通过过滤器
+            //随机生成token作为登录令牌
+            String token = UUID.randomUUID().toString();
+            UserDto userDto = new UserDto();
+            userDto.setToken(token);
+            userDto.setUserName(userName);
+            userDto.setPassword(password);
+            userDto.setStatus(1);
+            session.setAttribute(token,user);
+            return userDto;
         }else{
             if(user.getStatus()==0){
                 throw new HaveDisabledException("用户已被禁用");
             }else{
                 //将用户的信息存到session中，这样可以通过过滤器
-                session.setAttribute("user",user.getId());
-                return user;
+                //随机生成token作为登录令牌
+                String token = UUID.randomUUID().toString();
+                session.setAttribute(token,user);
+                UserDto userDto = new UserDto();
+                userDto.setToken(token);
+                userDto.setUserName(user.getUserName());
+                userDto.setPassword(user.getPassword());
+                userDto.setStatus(user.getStatus());
+                return userDto;
             }
         }
     }
@@ -155,7 +227,7 @@ public class WebConfig implements WebApplicationInitializer {
 ```
 
 ```java
-@Override
+    @Override
     public String upload(MultipartFile file,String basePath) {
         // 1.获取当前上传的文件名
         String originalFilename = file.getOriginalFilename();
@@ -186,7 +258,7 @@ filename:xxx
 ```
 
 ```java
-@Override
+    @Override
     public ResponseEntity<byte[]> download(HttpSession session, String basePath, String fileName) throws IOException {
         //获取服务器中文件的真实路径
         String realPath = basePath+fileName;
