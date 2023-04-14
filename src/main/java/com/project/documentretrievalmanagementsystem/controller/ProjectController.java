@@ -9,6 +9,7 @@ import com.project.documentretrievalmanagementsystem.service.IProjectService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,6 +29,8 @@ public class ProjectController {
 
     @Autowired
     IProjectService projectService;
+    @Value("${my.basePath}")
+    private String basePath;
 
     @PostMapping("/add")
     @ApiOperation(value = "添加项目")

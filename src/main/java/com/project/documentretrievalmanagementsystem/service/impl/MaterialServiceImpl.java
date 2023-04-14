@@ -30,11 +30,11 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
 
     @Override
     public Material addMaterial(String name, Integer projectId, MultipartFile file) {
-        fileService.upload(file, basePath+ File.separator+"material");
+        fileService.upload(file, basePath+"material"+File.separator);
         Material material = new Material();
         material.setName(name);
         material.setProjectId(projectId);
-        material.setLocation(basePath+ File.separator+"material");
+        material.setLocation(basePath+"material"+File.separator+name);
         save(material);
         return material;
     }

@@ -39,7 +39,6 @@ public class UserController {
     public R<User> login(@RequestBody @ApiParam("userName和Password") Map<String, String> map, HttpSession session, ServletRequest servletRequest){
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         String token = request.getHeader("Authorization");
-        System.out.println(token);
         User user = userService.login(map, session);
         if (user!=null){
             return R.success(user);
