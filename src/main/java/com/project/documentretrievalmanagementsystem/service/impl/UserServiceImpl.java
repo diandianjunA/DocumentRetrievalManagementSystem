@@ -45,6 +45,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             //随机生成token作为登录令牌
             String token = UUID.randomUUID().toString();
             UserDto userDto = new UserDto();
+            userDto.setId(user.getId());
             userDto.setToken(token);
             userDto.setUserName(userName);
             userDto.setPassword(password);
@@ -62,6 +63,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 String token = UUID.randomUUID().toString();
                 session.setAttribute(token,user);
                 UserDto userDto = new UserDto();
+                userDto.setId(user.getId());
                 userDto.setToken(token);
                 userDto.setUserName(user.getUserName());
                 userDto.setPassword(user.getPassword());

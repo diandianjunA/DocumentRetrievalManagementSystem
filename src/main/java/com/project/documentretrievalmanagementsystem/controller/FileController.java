@@ -2,6 +2,9 @@ package com.project.documentretrievalmanagementsystem.controller;
 
 import com.project.documentretrievalmanagementsystem.common.R;
 import com.project.documentretrievalmanagementsystem.service.FileService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +20,7 @@ import java.io.IOException;
 @RestController
 @RequestMapping("/file")
 @CrossOrigin
+@Api(tags = "文件操作")
 public class FileController {
 
     @Value("${my.basePath}")
@@ -30,7 +34,8 @@ public class FileController {
      * @return
      */
     @PostMapping("/upload")
-    public R<String> upload(MultipartFile file) {
+    @ApiOperation("上传文件")
+    public R<String> upload(@ApiParam("文件") MultipartFile file) {
         String filename = fileService.upload(file, basePath);
         return R.success(filename);
     }
@@ -42,7 +47,8 @@ public class FileController {
      * @throws IOException
      */
     @RequestMapping("/download")
-    public ResponseEntity<byte[]> download(HttpSession session,String fileName) throws IOException {
+    @ApiOperation("文件以附件形式下载")
+    public ResponseEntity<byte[]> download(HttpSession session,@ApiParam("文件名") String fileName) throws IOException {
         return fileService.download(session, basePath, fileName);
     }
 }

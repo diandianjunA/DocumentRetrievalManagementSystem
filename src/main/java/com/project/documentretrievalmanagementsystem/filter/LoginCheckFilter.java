@@ -33,7 +33,7 @@ public class LoginCheckFilter implements Filter {
             filterChain.doFilter(request,response);
             return;
         }
-        String token = request.getHeader("authorization");
+        String token = request.getHeader("Authorization");
         if(!StringUtils.isEmpty(token)){
             //判断用户是否登录
             if(request.getSession().getAttribute(token)!=null){
