@@ -5,11 +5,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.project.documentretrievalmanagementsystem.common.R;
+import com.project.documentretrievalmanagementsystem.common.UserHolder;
 import com.project.documentretrievalmanagementsystem.dto.MaterialDto;
 import com.project.documentretrievalmanagementsystem.entity.Material;
 import com.project.documentretrievalmanagementsystem.entity.Project;
 import com.project.documentretrievalmanagementsystem.exception.FileDownloadException;
-import com.project.documentretrievalmanagementsystem.mapper.ProjectMapper;
 import com.project.documentretrievalmanagementsystem.service.FileService;
 import com.project.documentretrievalmanagementsystem.service.IMaterialService;
 import com.project.documentretrievalmanagementsystem.service.IProjectService;
@@ -60,6 +60,9 @@ public class MaterialController {
     @GetMapping("/get")
     @ApiOperation("获取全部资料信息")
     public R<List<Material>> getMaterial(){
+        Integer currentId = UserHolder.getUser().getId();
+        LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        materialLambdaQueryWrapper.eq(Material::getUserId,currentId);
         List<Material> list = materialService.list();
         return R.success(list);
     }
@@ -72,7 +75,7 @@ public class MaterialController {
     }
 
     @GetMapping("/getByProjectId")
-    @ApiOperation("根据资料id获取资料")
+    @ApiOperation("根据项目id获取资料")
     public R<List<Material>> getMaterialByProjectsId(@ApiParam("项目id")Integer id){
         LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
         materialLambdaQueryWrapper.eq(Material::getProjectId,id);
@@ -85,7 +88,9 @@ public class MaterialController {
     public R<PageInfo<MaterialDto>> getPagedMaterial(@ApiParam("第几页")Integer pageNum, @ApiParam("一页多少条数据")int pageSize, @ApiParam("导航栏共展示几页")int navSize,@ApiParam("资料名称")String materialName,@ApiParam("资料对应的项目id") Integer projectId){
         try {
             PageHelper.startPage(pageNum,pageSize);
+            Integer currentId = UserHolder.getUser().getId();
             LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            materialLambdaQueryWrapper.eq(Material::getUserId,currentId);
             if(materialName!=null){
                 materialLambdaQueryWrapper.like(Material::getName,materialName);
             }
@@ -110,8 +115,10 @@ public class MaterialController {
     @GetMapping("/getContent")
     @ApiOperation("获取资料内容")
     public void getContent(@RequestBody @ApiParam("资料信息") Material material, HttpServletResponse response){
+        Integer currentId = UserHolder.getUser().getId();
         LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        materialLambdaQueryWrapper.eq(Material::getName,material.getName());
+        materialLambdaQueryWrapper.eq(Material::getUserId,currentId);
+        materialLambdaQueryWrapper.eq(Material::getId,material.getId());
         List<Material> list = materialService.list(materialLambdaQueryWrapper);
         if(list.isEmpty()){
             return;

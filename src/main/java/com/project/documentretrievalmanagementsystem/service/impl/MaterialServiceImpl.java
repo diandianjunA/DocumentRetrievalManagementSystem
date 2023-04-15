@@ -1,5 +1,6 @@
 package com.project.documentretrievalmanagementsystem.service.impl;
 
+import com.project.documentretrievalmanagementsystem.common.UserHolder;
 import com.project.documentretrievalmanagementsystem.entity.Material;
 import com.project.documentretrievalmanagementsystem.mapper.MaterialMapper;
 import com.project.documentretrievalmanagementsystem.service.FileService;
@@ -34,6 +35,8 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
         Material material = new Material();
         material.setName(name);
         material.setProjectId(projectId);
+        Integer currentId = UserHolder.getUser().getId();
+        material.setUserId(Math.toIntExact(currentId));
         String fileName = originalName.substring(originalName.lastIndexOf(File.separator));
         material.setLocation(basePath+"material"+File.separator+fileName);
         save(material);

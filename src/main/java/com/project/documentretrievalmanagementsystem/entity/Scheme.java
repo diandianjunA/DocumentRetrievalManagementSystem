@@ -16,7 +16,7 @@ import lombok.experimental.Accessors;
  * </p>
  *
  * @author diandianjun
- * @since 2023-04-14
+ * @since 2023-04-15
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -42,6 +42,9 @@ public class Scheme implements Serializable {
 
     @ApiModelProperty(value = "方案所在位置")
     private String location;
+
+    @ApiModelProperty(value = "所属用户的id")
+    private Integer userId;
 
 
 }

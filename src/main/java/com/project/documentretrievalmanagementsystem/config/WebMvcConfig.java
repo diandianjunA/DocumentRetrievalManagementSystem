@@ -1,23 +1,32 @@
 package com.project.documentretrievalmanagementsystem.config;
 
 import com.project.documentretrievalmanagementsystem.common.JacksonObjectMapper;
+import com.project.documentretrievalmanagementsystem.interceptors.LoginInterceptor;
+import com.project.documentretrievalmanagementsystem.interceptors.RefreshTokenInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 @Slf4j
 @Configuration
 @EnableWebMvc
 public class WebMvcConfig implements WebMvcConfigurer {
+
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+
     /**
      * 设置静态资源映射
      * @param registry
@@ -56,5 +65,13 @@ public class WebMvcConfig implements WebMvcConfigurer {
         //上传文件大小 50M 50*1024*1024
         resolver.setMaxUploadSize(50*1024*1024);
         return resolver;
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new LoginInterceptor()).excludePathPatterns(
+                "/user/login"
+        ).order(1);
+        registry.addInterceptor(new RefreshTokenInterceptor(stringRedisTemplate)).addPathPatterns("/**").order(0);
     }
 }

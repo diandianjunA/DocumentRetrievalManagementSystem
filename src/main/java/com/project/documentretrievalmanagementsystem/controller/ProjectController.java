@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.project.documentretrievalmanagementsystem.common.R;
+import com.project.documentretrievalmanagementsystem.common.UserHolder;
 import com.project.documentretrievalmanagementsystem.entity.Material;
 import com.project.documentretrievalmanagementsystem.entity.Project;
 import com.project.documentretrievalmanagementsystem.service.IMaterialService;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * <p>
@@ -42,6 +44,8 @@ public class ProjectController {
     @PostMapping("/add")
     @ApiOperation(value = "添加项目")
     public R<Project> addProject(@RequestBody @ApiParam("项目信息") Project project){
+        Integer currentId = UserHolder.getUser().getId();
+        project.setUserId(currentId);
         if(projectService.save(project)){
             return R.success(project);
         }else{
@@ -52,7 +56,10 @@ public class ProjectController {
     @GetMapping("/getAll")
     @ApiOperation("获取所有项目")
     public R<List<Project>> getProjects(){
-        List<Project> list = projectService.list();
+        LambdaQueryWrapper<Project> projectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        Integer currentId = UserHolder.getUser().getId();
+        projectLambdaQueryWrapper.eq(Project::getUserId,currentId);
+        List<Project> list = projectService.list(projectLambdaQueryWrapper);
         return R.success(list);
     }
 
@@ -65,19 +72,21 @@ public class ProjectController {
 
     @GetMapping("/getPaged")
     @ApiOperation("获取分页数据")
-    public R<PageInfo<Project>> getPagedProjects(@ApiParam("第几页")Integer pageNum,@ApiParam("一页多少条数据")int pageSize,@ApiParam("导航栏共展示几页")int navSize,@ApiParam("模糊查询项目名称") String projectName,@ApiParam("模糊查询项目分类") String category,@ApiParam("模糊查询项目备注") String remark){
+    public R<PageInfo<Project>> getPagedProjects(@ApiParam("第几页")Integer pageNum, @ApiParam("一页多少条数据") Integer pageSize, @ApiParam("导航栏共展示几页")Integer navSize, @ApiParam("模糊查询项目名称") String projectName, @ApiParam("模糊查询项目分类") String category, @ApiParam("模糊查询项目备注") String remark){
         try {
             PageHelper.startPage(pageNum,pageSize);
             LambdaQueryWrapper<Project> projectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            Integer currentId = UserHolder.getUser().getId();
             if(projectName!=null){
-                projectLambdaQueryWrapper.like(Project::getName,projectName);
+                projectLambdaQueryWrapper.or().like(Project::getName,projectName);
             }
             if(category!=null){
-                projectLambdaQueryWrapper.like(Project::getCategory,category);
+                projectLambdaQueryWrapper.or().like(Project::getCategory,category);
             }
             if(remark!=null){
-                projectLambdaQueryWrapper.like(Project::getRemark,remark);
+                projectLambdaQueryWrapper.or().like(Project::getRemark,remark);
             }
+            projectLambdaQueryWrapper.and(i->i.eq(Project::getUserId,currentId));
             List<Project> list = projectService.list(projectLambdaQueryWrapper);
             PageInfo<Project> projectPageInfo = new PageInfo<>(list,navSize);
             return R.success(projectPageInfo);
@@ -88,7 +97,7 @@ public class ProjectController {
 
     @PostMapping("/update")
     @ApiOperation("更新项目信息")
-    public R<Project> updateProject(@ApiParam("项目数据") Project project){
+    public R<Project> updateProject(@RequestBody @ApiParam("项目数据") Project project){
         if(projectService.updateById(project)){
             return R.success(project);
         }else{

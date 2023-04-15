@@ -1,7 +1,7 @@
 package com.project.documentretrievalmanagementsystem.service.impl;
 
+import cn.hutool.core.bean.copier.CopyOptions;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.project.documentretrievalmanagementsystem.common.R;
 import com.project.documentretrievalmanagementsystem.dto.UserDto;
 import com.project.documentretrievalmanagementsystem.entity.User;
 import com.project.documentretrievalmanagementsystem.exception.HaveDisabledException;
@@ -9,13 +9,21 @@ import com.project.documentretrievalmanagementsystem.exception.PasswordWrongExce
 import com.project.documentretrievalmanagementsystem.mapper.UserMapper;
 import com.project.documentretrievalmanagementsystem.service.IUserService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
+import cn.hutool.core.bean.BeanUtil;
 
 import javax.servlet.http.HttpSession;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import static com.project.documentretrievalmanagementsystem.utils.RedisConstants.LOGIN_USER_KEY;
+import static com.project.documentretrievalmanagementsystem.utils.RedisConstants.LOGIN_USER_TTL;
 
 /**
  * <p>
@@ -27,6 +35,8 @@ import java.util.UUID;
  */
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
     public User login(@RequestBody Map<String,String> map, HttpSession session){
         String userName = map.get("userName");
         String password = map.get("password");
@@ -50,7 +60,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             userDto.setUserName(userName);
             userDto.setPassword(password);
             userDto.setStatus(1);
-            session.setAttribute(token,user);
+            Map<String, Object> userMap = BeanUtil.beanToMap(userDto, new HashMap<>(),
+                    CopyOptions.create().setIgnoreNullValue(true).setFieldValueEditor((fieldName, fieldValue)->fieldValue.toString()));
+            //存储
+            stringRedisTemplate.opsForHash().putAll(LOGIN_USER_KEY+token,userMap);
+            //设置有效期
+            stringRedisTemplate.expire(LOGIN_USER_KEY+token,LOGIN_USER_TTL, TimeUnit.MINUTES);
             return userDto;
         }else{
             if(user.getStatus()==0){
@@ -68,6 +83,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 userDto.setUserName(user.getUserName());
                 userDto.setPassword(user.getPassword());
                 userDto.setStatus(user.getStatus());
+                Map<String, Object> userMap = BeanUtil.beanToMap(userDto, new HashMap<>(),
+                        CopyOptions.create().setIgnoreNullValue(true).setFieldValueEditor((fieldName, fieldValue)->fieldValue.toString()));
+                //存储
+                stringRedisTemplate.opsForHash().putAll(LOGIN_USER_KEY+token,userMap);
+                //设置有效期
+                stringRedisTemplate.expire(LOGIN_USER_KEY+token,LOGIN_USER_TTL, TimeUnit.MINUTES);
                 return userDto;
             }
         }
