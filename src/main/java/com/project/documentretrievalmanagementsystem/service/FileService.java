@@ -10,4 +10,5 @@ import java.io.IOException;
 public interface FileService {
     String upload(MultipartFile file,String basePath);
     ResponseEntity<byte[]> download(HttpSession session, String basePath, String fileName) throws IOException;
+    ResponseEntity<byte[]> download(HttpSession session, String location) throws IOException;
 }

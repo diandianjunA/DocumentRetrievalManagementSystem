@@ -1,11 +1,15 @@
 package com.project.documentretrievalmanagementsystem.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.project.documentretrievalmanagementsystem.common.R;
+import com.project.documentretrievalmanagementsystem.entity.Material;
 import com.project.documentretrievalmanagementsystem.entity.Project;
+import com.project.documentretrievalmanagementsystem.service.IMaterialService;
 import com.project.documentretrievalmanagementsystem.service.IProjectService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,10 +29,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/project")
 @CrossOrigin
+@Api(tags = "项目管理")
 public class ProjectController {
 
     @Autowired
     IProjectService projectService;
+    @Autowired
+    IMaterialService materialService;
     @Value("${my.basePath}")
     private String basePath;
 
@@ -49,12 +56,29 @@ public class ProjectController {
         return R.success(list);
     }
 
+    @GetMapping("/getById")
+    @ApiOperation("根据项目id获取项目")
+    public R<Project> getProjects(@ApiParam("项目id")Integer id){
+        Project project = projectService.getById(id);
+        return R.success(project);
+    }
+
     @GetMapping("/getPaged")
     @ApiOperation("获取分页数据")
-    public R<PageInfo<Project>> getPagedProjects(@ApiParam("第几页")Integer pageNum,@ApiParam("一页多少条数据")int pageSize,@ApiParam("导航栏共展示几页")int navSize){
+    public R<PageInfo<Project>> getPagedProjects(@ApiParam("第几页")Integer pageNum,@ApiParam("一页多少条数据")int pageSize,@ApiParam("导航栏共展示几页")int navSize,@ApiParam("模糊查询项目名称") String projectName,@ApiParam("模糊查询项目分类") String category,@ApiParam("模糊查询项目备注") String remark){
         try {
             PageHelper.startPage(pageNum,pageSize);
-            List<Project> list = projectService.list();
+            LambdaQueryWrapper<Project> projectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            if(projectName!=null){
+                projectLambdaQueryWrapper.like(Project::getName,projectName);
+            }
+            if(category!=null){
+                projectLambdaQueryWrapper.like(Project::getCategory,category);
+            }
+            if(remark!=null){
+                projectLambdaQueryWrapper.like(Project::getRemark,remark);
+            }
+            List<Project> list = projectService.list(projectLambdaQueryWrapper);
             PageInfo<Project> projectPageInfo = new PageInfo<>(list,navSize);
             return R.success(projectPageInfo);
         } catch (Exception e) {
@@ -63,11 +87,26 @@ public class ProjectController {
     }
 
     @PostMapping("/update")
+    @ApiOperation("更新项目信息")
     public R<Project> updateProject(@ApiParam("项目数据") Project project){
         if(projectService.updateById(project)){
             return R.success(project);
         }else{
             return R.error("修改失败");
+        }
+    }
+
+    @GetMapping("/delete")
+    @ApiOperation("删除项目")
+    public R<Integer> deleteProject(@ApiParam("项目id") Integer id){
+        boolean deleteProject = projectService.removeById(id);
+        LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        materialLambdaQueryWrapper.eq(Material::getProjectId,id);
+        materialService.remove(materialLambdaQueryWrapper);
+        if(deleteProject){
+            return R.success(1);
+        }else{
+            return R.error("删除失败");
         }
     }
 }

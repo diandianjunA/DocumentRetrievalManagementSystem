@@ -5,21 +5,30 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.project.documentretrievalmanagementsystem.common.R;
+import com.project.documentretrievalmanagementsystem.dto.MaterialDto;
 import com.project.documentretrievalmanagementsystem.entity.Material;
 import com.project.documentretrievalmanagementsystem.entity.Project;
+import com.project.documentretrievalmanagementsystem.exception.FileDownloadException;
+import com.project.documentretrievalmanagementsystem.mapper.ProjectMapper;
+import com.project.documentretrievalmanagementsystem.service.FileService;
 import com.project.documentretrievalmanagementsystem.service.IMaterialService;
+import com.project.documentretrievalmanagementsystem.service.IProjectService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -32,10 +41,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/material")
 @CrossOrigin
-@Api("资料管理")
+@Api(tags = "资料管理")
 public class MaterialController {
     @Autowired
     IMaterialService materialService;
+    @Autowired
+    IProjectService projectService;
+    @Autowired
+    FileService fileService;
 
     @PostMapping("/add")
     @ApiOperation("添加资料")
@@ -51,23 +64,54 @@ public class MaterialController {
         return R.success(list);
     }
 
+    @GetMapping("/getById")
+    @ApiOperation("根据资料id获取资料")
+    public R<Material> getMaterialById(@ApiParam("资料id")Integer id){
+        Material material = materialService.getById(id);
+        return R.success(material);
+    }
+
+    @GetMapping("/getByProjectId")
+    @ApiOperation("根据资料id获取资料")
+    public R<List<Material>> getMaterialByProjectsId(@ApiParam("项目id")Integer id){
+        LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        materialLambdaQueryWrapper.eq(Material::getProjectId,id);
+        List<Material> list = materialService.list(materialLambdaQueryWrapper);
+        return R.success(list);
+    }
+
     @GetMapping("/getPaged")
     @ApiOperation("获取分页资料信息")
-    public R<PageInfo<Material>> getPagedMaterial(@ApiParam("第几页")Integer pageNum,@ApiParam("一页多少条数据")int pageSize,@ApiParam("导航栏共展示几页")int navSize){
+    public R<PageInfo<MaterialDto>> getPagedMaterial(@ApiParam("第几页")Integer pageNum, @ApiParam("一页多少条数据")int pageSize, @ApiParam("导航栏共展示几页")int navSize,@ApiParam("资料名称")String materialName,@ApiParam("资料对应的项目id") Integer projectId){
         try {
             PageHelper.startPage(pageNum,pageSize);
-            List<Material> list = materialService.list();
-            PageInfo<Material> projectPageInfo = new PageInfo<>(list,navSize);
+            LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            if(materialName!=null){
+                materialLambdaQueryWrapper.like(Material::getName,materialName);
+            }
+            if(projectId!=null){
+                materialLambdaQueryWrapper.eq(Material::getProjectId,projectId);
+            }
+            List<Material> list = materialService.list(materialLambdaQueryWrapper);
+            ArrayList<MaterialDto> dtoList = new ArrayList<>();
+            Map<Integer, Project> projectMap = projectService.getProjectMap();
+            for(Material material:list){
+                MaterialDto materialDto = new MaterialDto(material);
+                materialDto.setProjectName(projectMap.get(material.getProjectId()).getName());
+                dtoList.add(materialDto);
+            }
+            PageInfo<MaterialDto> projectPageInfo = new PageInfo<>(dtoList,navSize);
             return R.success(projectPageInfo);
         } catch (Exception e) {
             return R.error(e.getMessage());
         }
     }
 
-    @GetMapping("/getDownload")
-    public void download(String name, HttpServletResponse response){
+    @GetMapping("/getContent")
+    @ApiOperation("获取资料内容")
+    public void getContent(@RequestBody @ApiParam("资料信息") Material material, HttpServletResponse response){
         LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        materialLambdaQueryWrapper.eq(Material::getName,name);
+        materialLambdaQueryWrapper.eq(Material::getName,material.getName());
         List<Material> list = materialService.list(materialLambdaQueryWrapper);
         if(list.isEmpty()){
             return;
@@ -87,7 +131,38 @@ public class MaterialController {
             outputStream.close();
             fileInputStream.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new FileDownloadException("文件下载失败");
+        }
+    }
+
+    @GetMapping("/getDownload")
+    @ApiOperation("下载资料")
+    public ResponseEntity<byte[]> getDownload(@RequestBody @ApiParam("资料信息") Material material, HttpSession session){
+        try {
+            return fileService.download(session, material.getLocation());
+        } catch (IOException e) {
+            throw new FileDownloadException("文件下载失败");
+        }
+    }
+
+    @PostMapping("/update")
+    @ApiOperation("更新资料信息")
+    public R<Material> updateMaterial(@ApiParam("资料数据") Material material){
+        if(materialService.updateById(material)){
+            return R.success(material);
+        }else{
+            return R.error("修改失败");
+        }
+    }
+
+    @GetMapping("/delete")
+    @ApiOperation("删除资料")
+    public R<Integer> deleteMaterial(@ApiParam("资料id") Integer id){
+        boolean deleteMaterial = materialService.removeById(id);
+        if(deleteMaterial){
+            return R.success(1);
+        }else{
+            return R.error("删除失败");
         }
     }
 }

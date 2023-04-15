@@ -1,5 +1,6 @@
 package com.project.documentretrievalmanagementsystem.common;
 
+import com.project.documentretrievalmanagementsystem.exception.FileDownloadException;
 import com.project.documentretrievalmanagementsystem.exception.HaveDisabledException;
 import com.project.documentretrievalmanagementsystem.exception.PasswordWrongException;
 import org.springframework.stereotype.Controller;
@@ -34,6 +35,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(PasswordWrongException.class)
     public R<String> PasswordWrongException(PasswordWrongException exception){
+        String message=exception.getMessage();
+        return R.error(message);
+    }
+
+    @ExceptionHandler(FileDownloadException.class)
+    public R<String> FileDownloadException(FileDownloadException exception){
         String message=exception.getMessage();
         return R.error(message);
     }

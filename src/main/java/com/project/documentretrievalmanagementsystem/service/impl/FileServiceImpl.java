@@ -64,4 +64,27 @@ public class FileServiceImpl implements FileService {
         is.close();
         return responseEntity;
     }
+
+    @Override
+    public ResponseEntity<byte[]> download(HttpSession session, String location) throws IOException {
+        //创建输入流
+        InputStream is = Files.newInputStream(Paths.get(location));
+        //创建字节数组
+        byte[] bytes = new byte[is.available()];
+        //将流读到字节数组中
+        is.read(bytes);
+        //创建HttpHeaders对象设置响应头信息
+        MultiValueMap<String, String> headers = new HttpHeaders();
+        //设置要下载方式以及下载文件的名字
+        String fileName = location.substring(location.lastIndexOf(File.separator));
+        headers.add("Content-Disposition", "attachment;filename="+ URLEncoder.encode(fileName,"UTF-8"));
+        //设置响应状态码
+        HttpStatus statusCode = HttpStatus.OK;
+        //创建ResponseEntity对象
+        ResponseEntity<byte[]> responseEntity = new ResponseEntity<>(bytes, headers,
+                statusCode);
+        //关闭输入流
+        is.close();
+        return responseEntity;
+    }
 }
