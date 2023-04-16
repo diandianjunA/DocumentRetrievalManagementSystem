@@ -12,58 +12,70 @@
 - 用户模块
 - 文件控制模块
 
-## 初始化filter
+## 初始化拦截器
 
 ```java
-@WebFilter(filterName = "loginCheckFilter",urlPatterns = "/*")
-@Slf4j
-public class LoginCheckFilter implements Filter {
-    //路径匹配器，支持通配符
-    public static final AntPathMatcher PATH_MATCHER=new AntPathMatcher();
-
-    @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        HttpServletRequest request = (HttpServletRequest) servletRequest;
-        HttpServletResponse response = (HttpServletResponse) servletResponse;
-        String requestURI = request.getRequestURI();
-        //定义不需要处理的请求路径
-        String[] urls = {"/static/**","/user/login"};
-        boolean check = check(urls, requestURI);
-        if(check){
-            //放行
-            filterChain.doFilter(request,response);
-            return;
-        }
-        String token = request.getHeader("authorization");
-        if(!StringUtils.isEmpty(token)){
-            //判断用户是否登录
-            if(request.getSession().getAttribute(token)!=null){
-                //将id存到当前线程中
-                Long userId = (Long) request.getSession().getAttribute(token);
-                BaseContext.setCurrentId(userId);
-                //放行
-                filterChain.doFilter(request,response);
-                return;
+    public class LoginInterceptor implements HandlerInterceptor {
+    
+        @Override
+        public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+            if(UserHolder.getUser()==null){
+                //没有,需要拦截
+                response.setStatus(401);
+                return false;
             }
-            //如果未登录
-            response.getWriter().write(JSON.toJSONString(R.error("NOTLOGIN")));
+            return true;
+        }
+    
+        @Override
+        public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+            HandlerInterceptor.super.postHandle(request, response, handler, modelAndView);
+        }
+    
+        @Override
+        public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+            HandlerInterceptor.super.afterCompletion(request, response, handler, ex);
         }
     }
+```
 
-    /**
-     * 路径匹配，检查本次请求是否需要放行
-     * @param urls
-     * @param requestURI
-     * @return
-     */
-    public boolean check(String[] urls , String requestURI){
-        for(String url:urls){
-            boolean match = PATH_MATCHER.match(url, requestURI);
-            if(match){
-                return true;
-            }
+```java
+public class RefreshTokenInterceptor implements HandlerInterceptor {
+    private StringRedisTemplate stringRedisTemplate;
+
+    public RefreshTokenInterceptor(StringRedisTemplate stringRedisTemplate) {
+        this.stringRedisTemplate=stringRedisTemplate;
+    }
+
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        //获取token及redis中的用户
+        String token = request.getHeader("Authorization");
+        if(StringUtils.isEmpty(token)){
+            return true;
         }
-        return false;
+        Map<Object, Object> userMap = stringRedisTemplate.opsForHash().entries(LOGIN_USER_KEY+token);
+        //判断用户是否存在
+        if(userMap.isEmpty()){
+            return true;
+        }
+        //存在就将用户信息保存到ThreadLocal中
+        UserDto userDto = BeanUtil.fillBeanWithMap(userMap, new UserDto(), false,
+                CopyOptions.create().setIgnoreNullValue(true).setFieldValueEditor((fieldName, fieldValue)->fieldValue.toString()));
+        UserHolder.saveUser(userDto);
+        //刷新token时间
+        stringRedisTemplate.expire(LOGIN_USER_KEY+token,LOGIN_USER_TTL, TimeUnit.MINUTES);
+        return true;
+    }
+
+    @Override
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+        HandlerInterceptor.super.postHandle(request, response, handler, modelAndView);
+    }
+
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+        HandlerInterceptor.super.afterCompletion(request, response, handler, ex);
     }
 }
 ```
@@ -158,14 +170,22 @@ password:xxx
 @Configuration
 @EnableWebMvc
 public class WebMvcConfig implements WebMvcConfigurer {
+
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+
     /**
      * 设置静态资源映射
      * @param registry
      */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        log.info("开始进行静态资源映射");
-        registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/");
+        registry.addResourceHandler("/**").addResourceLocations(
+                "classpath:/static/");
+        registry.addResourceHandler("swagger-ui.html", "doc.html").addResourceLocations(
+                "classpath:/META-INF/resources/");
+        registry.addResourceHandler("/webjars/**").addResourceLocations(
+                "classpath:/META-INF/resources/webjars/");
     }
 
     /**
@@ -192,6 +212,14 @@ public class WebMvcConfig implements WebMvcConfigurer {
         //上传文件大小 50M 50*1024*1024
         resolver.setMaxUploadSize(50*1024*1024);
         return resolver;
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new LoginInterceptor()).excludePathPatterns(
+                "/user/login"
+        ).order(1);
+        registry.addInterceptor(new RefreshTokenInterceptor(stringRedisTemplate)).addPathPatterns("/**").order(0);
     }
 }
 ```
