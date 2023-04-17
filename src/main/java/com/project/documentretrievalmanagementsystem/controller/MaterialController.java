@@ -1,6 +1,7 @@
 package com.project.documentretrievalmanagementsystem.controller;
 
 
+import cn.hutool.core.io.resource.InputStreamResource;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -18,7 +19,9 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -91,13 +94,13 @@ public class MaterialController {
             PageHelper.startPage(pageNum,pageSize);
             Integer currentId = UserHolder.getUser().getId();
             LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            if(materialName!=null){
+            if(materialName!=null&& !materialName.equals("")){
                 materialLambdaQueryWrapper.or().like(Material::getName,materialName);
             }
             if(projectId!=null){
-                materialLambdaQueryWrapper.or().eq(Material::getProjectId,projectId);
+                materialLambdaQueryWrapper.and(i->i.eq(Material::getProjectId,projectId));
             }
-            if(projectName!=null){
+            if(projectName!=null&& !projectName.equals("")){
                 LambdaQueryWrapper<Project> projectLambdaQueryWrapper = new LambdaQueryWrapper<>();
                 projectLambdaQueryWrapper.like(Project::getName,projectName);
                 for (Project project : projectService.list(projectLambdaQueryWrapper)) {
@@ -122,18 +125,10 @@ public class MaterialController {
 
     @GetMapping("/getContent")
     @ApiOperation("获取资料内容")
-    public void getContent(@RequestBody @ApiParam("资料信息") Material material, HttpServletResponse response){
-        Integer currentId = UserHolder.getUser().getId();
-        LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        materialLambdaQueryWrapper.eq(Material::getUserId,currentId);
-        materialLambdaQueryWrapper.eq(Material::getId,material.getId());
-        List<Material> list = materialService.list(materialLambdaQueryWrapper);
-        if(list.isEmpty()){
-            return;
-        }
+    public void getContent(@ApiParam("资料信息") String location, HttpServletResponse response){
         try {
             // 1.创建一个文件输入流用于读取图片
-            FileInputStream fileInputStream = new FileInputStream(list.get(0).getLocation());
+            FileInputStream fileInputStream = new FileInputStream(location);
             // 2.创建一个输出流，通过输出流将文件写回浏览器，在浏览器中展示图片
             ServletOutputStream outputStream = response.getOutputStream();
             int len = 0;
@@ -150,11 +145,21 @@ public class MaterialController {
         }
     }
 
-    @GetMapping("/getDownload")
+    @GetMapping(value = "/getDownload")
     @ApiOperation("下载资料")
-    public ResponseEntity<byte[]> getDownload(@RequestBody @ApiParam("资料信息") Material material, HttpSession session){
+    public ResponseEntity<byte[]> getDownload(@ApiParam("资料信息") String location, HttpServletResponse response) throws IOException {
         try {
-            return fileService.download(session, material.getLocation());
+            return fileService.download(response, location);
+        } catch (IOException e) {
+            throw new FileDownloadException("文件下载失败");
+        }
+    }
+
+    @GetMapping(value = "/getDownload2")
+    @ApiOperation("下载资料")
+    public void getDownload2(@ApiParam("资料信息") String location, HttpServletResponse response) throws IOException {
+        try {
+            fileService.downloadFile(response, location);
         } catch (IOException e) {
             throw new FileDownloadException("文件下载失败");
         }
@@ -171,6 +176,7 @@ public class MaterialController {
     }
 
     @GetMapping("/delete")
+    @ResponseBody
     @ApiOperation("删除资料")
     public R<Integer> deleteMaterial(@ApiParam("资料id") Integer id){
         boolean deleteMaterial = materialService.removeById(id);

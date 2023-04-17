@@ -1,21 +1,33 @@
 package com.project.documentretrievalmanagementsystem.service.impl;
 
+import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.io.resource.InputStreamResource;
+import com.alibaba.fastjson.JSONObject;
 import com.project.documentretrievalmanagementsystem.common.R;
 import com.project.documentretrievalmanagementsystem.service.FileService;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.ResourceUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.ServletContext;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.*;
+import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.UUID;
+
+
 
 @Service
 public class FileServiceImpl implements FileService {
@@ -66,8 +78,7 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public ResponseEntity<byte[]> download(HttpSession session, String location) throws IOException {
-        //创建输入流
+    public ResponseEntity<byte[]> download(HttpServletResponse response, String location) throws IOException {
         InputStream is = Files.newInputStream(Paths.get(location));
         //创建字节数组
         byte[] bytes = new byte[is.available()];
@@ -75,8 +86,8 @@ public class FileServiceImpl implements FileService {
         is.read(bytes);
         //创建HttpHeaders对象设置响应头信息
         MultiValueMap<String, String> headers = new HttpHeaders();
+        String fileName=location.substring(location.lastIndexOf(File.separator)+1);
         //设置要下载方式以及下载文件的名字
-        String fileName = location.substring(location.lastIndexOf(File.separator));
         headers.add("Content-Disposition", "attachment;filename="+ URLEncoder.encode(fileName,"UTF-8"));
         //设置响应状态码
         HttpStatus statusCode = HttpStatus.OK;
@@ -86,5 +97,41 @@ public class FileServiceImpl implements FileService {
         //关闭输入流
         is.close();
         return responseEntity;
+    }
+
+    @Override
+    public void downloadFile(HttpServletResponse response, String location) throws IOException {
+        ServletOutputStream out =null;
+        ByteArrayOutputStream baos = null;
+        FileInputStream fileInputStream=null;
+        try {
+            File file = new File(location);
+            fileInputStream = new FileInputStream(file);
+            byte[] buffer = new byte[1024];
+            int len;
+            baos = new ByteArrayOutputStream();
+            while ((len=fileInputStream.read(buffer))!=-1){
+                baos.write(buffer,0,len);
+            }
+            String fileName=location.substring(location.lastIndexOf(File.separator)+1);
+            response.addHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName,"UTF-8"));
+            response.addHeader("Content-Length", "" + baos.size());
+            response.setHeader("filename", fileName);
+            response.setContentType("application/octet-stream");
+            out = response.getOutputStream();
+            out.write(baos.toByteArray());
+
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new RuntimeException();
+        }finally {
+            assert baos != null;
+            baos.flush();
+            baos.close();
+            assert out != null;
+            out.flush();
+            out.close();
+            fileInputStream.close();
+        }
     }
 }

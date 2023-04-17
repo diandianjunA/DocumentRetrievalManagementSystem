@@ -77,13 +77,13 @@ public class ProjectController {
             PageHelper.startPage(pageNum,pageSize);
             LambdaQueryWrapper<Project> projectLambdaQueryWrapper = new LambdaQueryWrapper<>();
             Integer currentId = UserHolder.getUser().getId();
-            if(projectName!=null){
+            if(projectName!=null&& !projectName.equals("")){
                 projectLambdaQueryWrapper.or().like(Project::getName,projectName);
             }
-            if(category!=null){
+            if(category!=null&& !category.equals("")){
                 projectLambdaQueryWrapper.or().like(Project::getCategory,category);
             }
-            if(remark!=null){
+            if(remark!=null&& !remark.equals("")){
                 projectLambdaQueryWrapper.or().like(Project::getRemark,remark);
             }
             projectLambdaQueryWrapper.and(i->i.eq(Project::getUserId,currentId));
