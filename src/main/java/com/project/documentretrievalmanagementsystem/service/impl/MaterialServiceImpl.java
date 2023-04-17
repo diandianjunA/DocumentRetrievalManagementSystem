@@ -37,8 +37,7 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
         material.setProjectId(projectId);
         Integer currentId = UserHolder.getUser().getId();
         material.setUserId(Math.toIntExact(currentId));
-        String fileName = originalName.substring(originalName.lastIndexOf(File.separator));
-        material.setLocation(basePath+"material"+File.separator+fileName);
+        material.setLocation(basePath+"material"+File.separator+ originalName);
         save(material);
         return material;
     }

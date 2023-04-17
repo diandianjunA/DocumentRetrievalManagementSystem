@@ -7,6 +7,7 @@ import com.github.pagehelper.PageInfo;
 import com.project.documentretrievalmanagementsystem.common.R;
 import com.project.documentretrievalmanagementsystem.common.UserHolder;
 import com.project.documentretrievalmanagementsystem.dto.MaterialDto;
+import com.project.documentretrievalmanagementsystem.dto.MaterialFileDto;
 import com.project.documentretrievalmanagementsystem.entity.Material;
 import com.project.documentretrievalmanagementsystem.entity.Project;
 import com.project.documentretrievalmanagementsystem.exception.FileDownloadException;
@@ -52,8 +53,8 @@ public class MaterialController {
 
     @PostMapping("/add")
     @ApiOperation("添加资料")
-    public R<Material> addMaterial(@ApiParam("资料名称") @RequestParam(value = "name") String name, @ApiParam("资料所属项目的id") @RequestParam(value = "projectId") Integer projectId, @ApiParam("文件") @RequestParam(value = "file")MultipartFile file){
-        Material material = materialService.addMaterial(name, projectId, file);
+    public R<Material> addMaterial(MaterialFileDto materialFileDto){
+        Material material = materialService.addMaterial(materialFileDto.getName(), materialFileDto.getProjectId(), materialFileDto.getFile());
         return R.success(material);
     }
 
@@ -85,18 +86,25 @@ public class MaterialController {
 
     @GetMapping("/getPaged")
     @ApiOperation("获取分页资料信息")
-    public R<PageInfo<MaterialDto>> getPagedMaterial(@ApiParam("第几页")Integer pageNum, @ApiParam("一页多少条数据")int pageSize, @ApiParam("导航栏共展示几页")int navSize,@ApiParam("资料名称")String materialName,@ApiParam("资料对应的项目id") Integer projectId){
+    public R<PageInfo<MaterialDto>> getPagedMaterial(@ApiParam("第几页")Integer pageNum, @ApiParam("一页多少条数据")int pageSize, @ApiParam("导航栏共展示几页")int navSize,@ApiParam("资料名称")String materialName,@ApiParam("资料对应的项目id") Integer projectId,@ApiParam("项目名称")String projectName){
         try {
             PageHelper.startPage(pageNum,pageSize);
             Integer currentId = UserHolder.getUser().getId();
             LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            materialLambdaQueryWrapper.eq(Material::getUserId,currentId);
             if(materialName!=null){
-                materialLambdaQueryWrapper.like(Material::getName,materialName);
+                materialLambdaQueryWrapper.or().like(Material::getName,materialName);
             }
             if(projectId!=null){
-                materialLambdaQueryWrapper.eq(Material::getProjectId,projectId);
+                materialLambdaQueryWrapper.or().eq(Material::getProjectId,projectId);
             }
+            if(projectName!=null){
+                LambdaQueryWrapper<Project> projectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                projectLambdaQueryWrapper.like(Project::getName,projectName);
+                for (Project project : projectService.list(projectLambdaQueryWrapper)) {
+                    materialLambdaQueryWrapper.or().eq(Material::getProjectId,project.getId());
+                }
+            }
+            materialLambdaQueryWrapper.and(i->i.eq(Material::getUserId,currentId));
             List<Material> list = materialService.list(materialLambdaQueryWrapper);
             ArrayList<MaterialDto> dtoList = new ArrayList<>();
             Map<Integer, Project> projectMap = projectService.getProjectMap();
