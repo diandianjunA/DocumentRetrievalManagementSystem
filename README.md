@@ -10,9 +10,13 @@
 
 ## 系统模块
 - 用户模块
-- 文件控制模块
+- 项目模块
 
 ## 初始化拦截器
+
+主要内容为获取请求头中的token并与Redis中的token值比对是否相同
+
+用于拦截未登录用户访问除登录以外其他功能的操作
 
 ```java
     public class LoginInterceptor implements HandlerInterceptor {
@@ -80,8 +84,103 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
 }
 ```
 
+## 初始化MVC配置文件
+
+主要内容为添加静态资源映射，将上述拦截器加入到springMVC拦截器中
+
+将Redis传递给拦截器，配置MultipartResolver使得文件上传可以接受Multipart类型的文件
+
+```java
+@Slf4j
+@Configuration
+@EnableWebMvc
+public class WebMvcConfig implements WebMvcConfigurer {
+
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+
+    /**
+     * 设置静态资源映射
+     * @param registry
+     */
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/**").addResourceLocations(
+                "classpath:/static/");
+        registry.addResourceHandler("swagger-ui.html", "doc.html").addResourceLocations(
+                "classpath:/META-INF/resources/");
+        registry.addResourceHandler("/webjars/**").addResourceLocations(
+                "classpath:/META-INF/resources/webjars/");
+    }
+
+    /**
+     * 扩展MVC框架的消息转换器
+     * @param converters MVC原先默认的转换器
+     */
+    @Override
+    public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
+        //创建消息转换器对象
+        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
+        //设置对象转换器，底层使用Jackson将java对象转为json
+        converter.setObjectMapper(new JacksonObjectMapper());
+        ArrayList<MediaType> mediaTypes = new ArrayList<>();
+        mediaTypes.add(MediaType.ALL);
+        mediaTypes.add(MediaType.APPLICATION_OCTET_STREAM);
+        converter.setSupportedMediaTypes(mediaTypes);
+        //将这个消息转换器追加到默认的转换器中
+        converters.add(0,converter);
+    }
+
+
+    @Bean(name = "multipartResolver")
+    public MultipartResolver multipartResolver(){
+        CommonsMultipartResolver resolver = new CommonsMultipartResolver();
+        resolver.setDefaultEncoding("UTF-8");
+        //resolveLazily属性启用是为了推迟文件解析，以在在UploadAction中捕获文件大小异常
+        resolver.setResolveLazily(true);
+        resolver.setMaxInMemorySize(40960);
+        //上传文件大小 50M 50*1024*1024
+        resolver.setMaxUploadSize(50*1024*1024);
+        return resolver;
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new LoginInterceptor()).excludePathPatterns("/user/login","/index.html","/js/**","/css/**","/swagger-resources/**"
+                ,"/webjars/**"
+                ,"/v2/**"
+                ,"/swagger-ui.html/**").order(1);
+        registry.addInterceptor(new RefreshTokenInterceptor(stringRedisTemplate)).addPathPatterns("/**").order(0);
+    }
+}
+```
+
+## 初始化web配置文件
+
+主要内容为注册springMVC的配置文件和DispatchServlet
+
+```java
+public class WebConfig implements WebApplicationInitializer {
+    @Override
+    public void onStartup(ServletContext servletContext) throws ServletException {
+        AnnotationConfigWebApplicationContext ctx=new AnnotationConfigWebApplicationContext();
+        ctx.register(WebMvcConfig.class);//注册SpringMvc的配置类WebMvcConfig
+        ctx.setServletContext(servletContext);//和当前ServletContext关联
+        /**
+         * 注册SpringMvc的DispatcherServlet
+         */
+        ServletRegistration.Dynamic servlet=servletContext.addServlet("dispatcher",new DispatcherServlet(ctx));
+        servlet.addMapping("/");
+        servlet.setLoadOnStartup(1);
+    }
+}
+```
+
+
 ## 用户模块
 用户类定义
+
+每个用户有自己的id作为唯一标识，有自己的用户名，密码，和状态表示是否被禁用
 
 ```java
 @Data
@@ -198,9 +297,14 @@ public class WebMvcConfig implements WebMvcConfigurer {
         MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
         //设置对象转换器，底层使用Jackson将java对象转为json
         converter.setObjectMapper(new JacksonObjectMapper());
+        ArrayList<MediaType> mediaTypes = new ArrayList<>();
+        mediaTypes.add(MediaType.ALL);
+        mediaTypes.add(MediaType.APPLICATION_OCTET_STREAM);
+        converter.setSupportedMediaTypes(mediaTypes);
         //将这个消息转换器追加到默认的转换器中
         converters.add(0,converter);
     }
+
 
     @Bean(name = "multipartResolver")
     public MultipartResolver multipartResolver(){
@@ -216,9 +320,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new LoginInterceptor()).excludePathPatterns(
-                "/user/login"
-        ).order(1);
+        registry.addInterceptor(new LoginInterceptor()).excludePathPatterns("/user/login","/index.html","/js/**","/css/**","/swagger-resources/**"
+                ,"/webjars/**"
+                ,"/v2/**"
+                ,"/swagger-ui.html/**").order(1);
         registry.addInterceptor(new RefreshTokenInterceptor(stringRedisTemplate)).addPathPatterns("/**").order(0);
     }
 }

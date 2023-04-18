@@ -77,7 +77,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new LoginInterceptor()).excludePathPatterns("/user/login").order(1);
+        registry.addInterceptor(new LoginInterceptor()).excludePathPatterns("/user/login","/index.html","/js/**","/css/**","/swagger-resources/**"
+                ,"/webjars/**"
+                ,"/v2/**"
+                ,"/swagger-ui.html/**").order(1);
         registry.addInterceptor(new RefreshTokenInterceptor(stringRedisTemplate)).addPathPatterns("/**").order(0);
     }
 }
