@@ -179,7 +179,7 @@ public class MaterialController {
 
     @GetMapping("/delete")
     @ResponseBody
-    //在删除数据库上资料的同时，删除服务器上的文件
+    @ApiOperation("在删除数据库上资料的同时，删除服务器上的文件")
     public R deleteMaterial(@ApiParam("资料id") Integer id){
         Material material = materialService.getById(id);
         if(materialService.removeById(id)){
