@@ -28,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -178,10 +179,15 @@ public class MaterialController {
     @GetMapping("/delete")
     @ResponseBody
     @ApiOperation("删除资料")
-    public R<Integer> deleteMaterial(@ApiParam("资料id") Integer id){
-        boolean deleteMaterial = materialService.removeById(id);
-        if(deleteMaterial){
-            return R.success(1);
+    //在删除数据库上资料的同时，删除服务器上的文件
+    public R deleteMaterial(@ApiParam("资料id") Integer id){
+        Material material = materialService.getById(id);
+        if(materialService.removeById(id)){
+            File file = new File(material.getLocation());
+            if(file.exists()){
+                file.delete();
+            }
+            return R.success("删除成功");
         }else{
             return R.error("删除失败");
         }
