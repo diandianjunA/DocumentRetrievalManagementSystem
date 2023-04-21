@@ -1,7 +1,11 @@
 package com.project.documentretrievalmanagementsystem;
 
+import com.project.documentretrievalmanagementsystem.dto.EsQueryDto;
+import com.project.documentretrievalmanagementsystem.dto.MaterialDto;
+import com.project.documentretrievalmanagementsystem.entity.Material;
 import com.project.documentretrievalmanagementsystem.entity.User;
 import com.project.documentretrievalmanagementsystem.mapper.UserMapper;
+import com.project.documentretrievalmanagementsystem.service.IMaterialService;
 import io.github.swagger2markup.Swagger2MarkupConfig;
 import io.github.swagger2markup.Swagger2MarkupConverter;
 import io.github.swagger2markup.builder.Swagger2MarkupConfigBuilder;
@@ -13,12 +17,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.util.List;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 class DocumentRetrievalManagementSystemApplicationTests {
 
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    IMaterialService materialService;
     @Test
     void contextLoads() {
         for (User user : userMapper.selectList(null)) {
@@ -38,5 +45,17 @@ class DocumentRetrievalManagementSystemApplicationTests {
                 .build()
                 .toFolder(Paths.get("src/docs/markdown/generated"));
         //这是生成的文档位置，可以修改为输出单文件，toFolder改为toFile
+    }
+
+    @Test
+    void fuzzyQuery() throws Exception {
+        EsQueryDto esQueryDto = new EsQueryDto();
+        esQueryDto.setFrom(0);
+        esQueryDto.setSize(5);
+        esQueryDto.setWord("系统");
+        List<MaterialDto> materialDtos = materialService.fuzzyQuery(esQueryDto);
+        for(MaterialDto materialDto:materialDtos){
+            System.out.println(materialDto);
+        }
     }
 }

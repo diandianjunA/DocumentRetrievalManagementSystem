@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 @Data
 public class MaterialDto extends Material {
     public String projectName;
+    public String content;
 
     public MaterialDto(Material material){
         this.setId(material.getId());

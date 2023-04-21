@@ -48,4 +48,10 @@ public class GlobalExceptionHandler {
         String message=exception.getMessage();
         return R.error(message);
     }
+
+    @ExceptionHandler(RuntimeException.class)
+    public R<String> RuntimeException(RuntimeException exception){
+        String message=exception.getMessage();
+        return R.error(message);
+    }
 }

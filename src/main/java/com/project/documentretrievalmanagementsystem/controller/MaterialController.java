@@ -7,6 +7,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.project.documentretrievalmanagementsystem.common.R;
 import com.project.documentretrievalmanagementsystem.common.UserHolder;
+import com.project.documentretrievalmanagementsystem.dto.EsQueryDto;
 import com.project.documentretrievalmanagementsystem.dto.MaterialDto;
 import com.project.documentretrievalmanagementsystem.dto.MaterialFileDto;
 import com.project.documentretrievalmanagementsystem.entity.Material;
@@ -189,6 +190,21 @@ public class MaterialController {
             return R.success("删除成功");
         }else{
             return R.error("删除失败");
+        }
+    }
+
+    @GetMapping("/getFuzzyPaged")
+    @ApiOperation("获取模糊查询分页资料信息")
+    public R<List<MaterialDto>> getFuzzyPagedMaterial(@ApiParam("第几页")Integer pageNum, @ApiParam("一页多少条数据")int pageSize,@ApiParam("搜索关键字") String keyWord){
+        try {
+            EsQueryDto esQueryDto = new EsQueryDto();
+            esQueryDto.setFrom((pageNum-1)*pageSize);
+            esQueryDto.setSize((pageNum-1)*pageSize+pageSize);
+            esQueryDto.setWord(keyWord);
+            List<MaterialDto> materialDtos = materialService.fuzzyQuery(esQueryDto);
+            return R.success(materialDtos);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }

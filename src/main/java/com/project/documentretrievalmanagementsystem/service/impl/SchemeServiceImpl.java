@@ -17,4 +17,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> implements ISchemeService {
 
+    @Override
+    public String getSummary(String filePath) {
+        return null;
+    }
 }
