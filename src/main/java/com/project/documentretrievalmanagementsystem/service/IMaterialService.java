@@ -14,4 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
  */
 public interface IMaterialService extends IService<Material> {
     Material addMaterial(String name, Integer projectId, MultipartFile file);
+
+    //删除服务器或者本地上的资料
+    void deleteMaterial(Integer id);
 }

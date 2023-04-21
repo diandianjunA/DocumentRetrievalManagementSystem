@@ -41,4 +41,14 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
         save(material);
         return material;
     }
+
+    @Override
+    public void deleteMaterial(Integer id) {
+        Material material = getById(id);
+        File file = new File(material.getLocation());
+        if(file.exists()){
+            file.delete();
+        }
+        removeById(id);
+    }
 }

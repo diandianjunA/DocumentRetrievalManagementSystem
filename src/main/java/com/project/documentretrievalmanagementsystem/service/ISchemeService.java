@@ -13,4 +13,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface ISchemeService extends IService<Scheme> {
 
+    //调用python接口生成资料的摘要
+    public String getSummary(String filePath);
 }
+

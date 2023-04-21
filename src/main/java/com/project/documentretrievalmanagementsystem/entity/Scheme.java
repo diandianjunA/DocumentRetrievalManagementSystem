@@ -46,5 +46,8 @@ public class Scheme implements Serializable {
     @ApiModelProperty(value = "所属用户的id")
     private Integer userId;
 
+    @ApiModelProperty(value = "方案的摘要")
+    private String summary;
+
 
 }
