@@ -8,5 +8,5 @@ import org.springframework.web.multipart.MultipartFile;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class MaterialFileDto extends Material {
-    MultipartFile file;
+    MultipartFile file;             //用于上传的文件
 }

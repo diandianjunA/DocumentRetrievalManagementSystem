@@ -12,16 +12,20 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-@ControllerAdvice(annotations = {RestController.class, Controller.class})
-@ResponseBody
+        /*这种方式可以避免在Controller层中出现大量的try-catch块，
+        使代码更加简洁、清晰。同时也可以实现异常信息的统一处理和格式化，
+        便于前端开发人员对错误进行定位和处理。*/
+
+@ControllerAdvice(annotations = {RestController.class, Controller.class})   //全局异常处理
+@ResponseBody                                                               //返回json数据
 public class GlobalExceptionHandler {
-    @ExceptionHandler(FileNotFoundException.class)
+    @ExceptionHandler(FileNotFoundException.class)                          //捕获指定异常
     public R<String> fileNotFoundException(FileNotFoundException exception){
         String message=exception.getMessage();
         return R.error(message);
     }
 
-    @ExceptionHandler(HaveDisabledException.class)
+    @ExceptionHandler(HaveDisabledException.class)                          //捕获指定异常
     public R<String> haveDisabledException(HaveDisabledException exception){
         String message=exception.getMessage();
         return R.error(message);

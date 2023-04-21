@@ -25,7 +25,7 @@ import lombok.experimental.Accessors;
 @ApiModel(value="Scheme对象", description="")
 public class Scheme implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;                    //指定序列化版本号
 
     @ApiModelProperty(value = "方案id")
     @TableId(value = "id", type = IdType.AUTO)

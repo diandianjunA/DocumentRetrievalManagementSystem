@@ -20,9 +20,9 @@ import java.io.IOException;
 @Api(tags = "文件操作")
 public class FileController {
 
-    @Value("${my.basePath}")
+    @Value("${my.basePath}")            // 从配置文件中读取文件存储路径
     private String basePath;
-    @Autowired
+    @Autowired                          // 自动注入FileService
     private FileService fileService;
 
     /**
