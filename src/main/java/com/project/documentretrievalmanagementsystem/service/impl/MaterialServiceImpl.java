@@ -4,6 +4,8 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.project.documentretrievalmanagementsystem.common.UserHolder;
 import com.project.documentretrievalmanagementsystem.dto.EsQueryDto;
 import com.project.documentretrievalmanagementsystem.dto.MaterialDto;
@@ -23,6 +25,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -65,6 +68,36 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
             file.delete();
         }
         removeById(id);
+    }
+
+    @Override
+    public PageInfo<MaterialDto> getPagedMaterial(Integer pageNum, int pageSize, int navSize, String materialName, Integer projectId, String projectName) {
+        PageHelper.startPage(pageNum,pageSize);
+        Integer currentId = UserHolder.getUser().getId();
+        LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        if(materialName!=null&& !materialName.equals("")){
+            materialLambdaQueryWrapper.or().like(Material::getName,materialName);
+        }
+        if(projectId!=null){
+            materialLambdaQueryWrapper.and(i->i.eq(Material::getProjectId,projectId));
+        }
+        if(projectName!=null&& !projectName.equals("")){
+            LambdaQueryWrapper<Project> projectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            projectLambdaQueryWrapper.like(Project::getName,projectName);
+            for (Project project : projectService.list(projectLambdaQueryWrapper)) {
+                materialLambdaQueryWrapper.or().eq(Material::getProjectId,project.getId());
+            }
+        }
+        materialLambdaQueryWrapper.and(i->i.eq(Material::getUserId,currentId));
+        List<Material> list = list(materialLambdaQueryWrapper);
+        ArrayList<MaterialDto> dtoList = new ArrayList<>();
+        Map<Integer, Project> projectMap = projectService.getProjectMap();
+        for(Material material:list){
+            MaterialDto materialDto = new MaterialDto(material);
+            materialDto.setProjectName(projectMap.get(material.getProjectId()).getName());
+            dtoList.add(materialDto);
+        }
+        return new PageInfo<>(dtoList,navSize);
     }
 
     @Override

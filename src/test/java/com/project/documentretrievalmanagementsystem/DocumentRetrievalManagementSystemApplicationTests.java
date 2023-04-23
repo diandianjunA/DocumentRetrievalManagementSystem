@@ -22,40 +22,4 @@ import java.util.List;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 class DocumentRetrievalManagementSystemApplicationTests {
 
-    @Autowired
-    private UserMapper userMapper;
-    @Autowired
-    IMaterialService materialService;
-    @Test
-    void contextLoads() {
-        for (User user : userMapper.selectList(null)) {
-            System.out.println(user);
-        }
-    }
-
-    @Test
-    void swaggerDoc() throws MalformedURLException {
-        Swagger2MarkupConfig config = new Swagger2MarkupConfigBuilder()
-                .withMarkupLanguage(MarkupLanguage.MARKDOWN)
-                // 输出Markdown格式，可以修改文档类型，例MarkupLanguage.ASCIIDOC
-                .build();
-
-        Swagger2MarkupConverter.from(new URL("http://localhost:8070/v2/api-docs"))
-                .withConfig(config)
-                .build()
-                .toFolder(Paths.get("src/docs/markdown/generated"));
-        //这是生成的文档位置，可以修改为输出单文件，toFolder改为toFile
-    }
-
-    @Test
-    void fuzzyQuery() throws Exception {
-        EsQueryDto esQueryDto = new EsQueryDto();
-        esQueryDto.setFrom(0);
-        esQueryDto.setSize(5);
-        esQueryDto.setWord("系统");
-        List<MaterialDto> materialDtos = materialService.fuzzyQuery(esQueryDto);
-        for(MaterialDto materialDto:materialDtos){
-            System.out.println(materialDto);
-        }
-    }
 }
