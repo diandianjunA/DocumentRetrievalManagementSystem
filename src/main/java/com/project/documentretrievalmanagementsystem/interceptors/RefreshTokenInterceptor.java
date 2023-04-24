@@ -19,7 +19,7 @@ import static com.project.documentretrievalmanagementsystem.utils.RedisConstants
 
 
 public class RefreshTokenInterceptor implements HandlerInterceptor {
-    private StringRedisTemplate stringRedisTemplate;
+    private final StringRedisTemplate stringRedisTemplate;
 
     public RefreshTokenInterceptor(StringRedisTemplate stringRedisTemplate) {
         this.stringRedisTemplate=stringRedisTemplate;

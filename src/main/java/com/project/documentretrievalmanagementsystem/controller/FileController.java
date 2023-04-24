@@ -45,7 +45,7 @@ public class FileController {
      */
     @GetMapping("/download")
     @ApiOperation("文件以附件形式下载")
-    public ResponseEntity<byte[]> download(HttpSession session,@ApiParam("文件名") String fileName) throws IOException {
+    public ResponseEntity<byte[]> download(HttpSession session, @ApiParam("文件名") String fileName) throws IOException {
         return fileService.download(session, basePath, fileName);
     }
 }

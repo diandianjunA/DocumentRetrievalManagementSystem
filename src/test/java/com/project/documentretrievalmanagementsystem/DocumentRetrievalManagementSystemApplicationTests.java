@@ -6,6 +6,7 @@ import com.project.documentretrievalmanagementsystem.entity.Material;
 import com.project.documentretrievalmanagementsystem.entity.User;
 import com.project.documentretrievalmanagementsystem.mapper.UserMapper;
 import com.project.documentretrievalmanagementsystem.service.IMaterialService;
+import com.project.documentretrievalmanagementsystem.service.ISchemeService;
 import com.project.documentretrievalmanagementsystem.service.impl.SchemeServiceImpl;
 import io.github.swagger2markup.Swagger2MarkupConfig;
 import io.github.swagger2markup.Swagger2MarkupConverter;
@@ -27,6 +28,8 @@ class DocumentRetrievalManagementSystemApplicationTests {
     private UserMapper userMapper;
     @Autowired
     IMaterialService materialService;
+    @Autowired
+    ISchemeService schemeService;
     @Test
     void contextLoads() {
         for (User user : userMapper.selectList(null)) {
@@ -62,7 +65,6 @@ class DocumentRetrievalManagementSystemApplicationTests {
 
     @Test
     void generateSummary() throws Exception {
-        SchemeServiceImpl schemeService = new SchemeServiceImpl();
         String summary = schemeService.generateSummary(4);
         System.out.println(summary);
     }

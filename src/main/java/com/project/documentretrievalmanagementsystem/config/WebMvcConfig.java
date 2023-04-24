@@ -1,8 +1,10 @@
 package com.project.documentretrievalmanagementsystem.config;
 
+import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.project.documentretrievalmanagementsystem.common.JacksonObjectMapper;
 import com.project.documentretrievalmanagementsystem.interceptors.LoginInterceptor;
 import com.project.documentretrievalmanagementsystem.interceptors.RefreshTokenInterceptor;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -54,10 +56,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
         MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
         //设置对象转换器，底层使用Jackson将java对象转为json
         converter.setObjectMapper(new JacksonObjectMapper());
-        ArrayList<MediaType> mediaTypes = new ArrayList<>();
-        mediaTypes.add(MediaType.ALL);
-        mediaTypes.add(MediaType.APPLICATION_OCTET_STREAM);
-        converter.setSupportedMediaTypes(mediaTypes);
         //将这个消息转换器追加到默认的转换器中
         converters.add(0,converter);
     }
@@ -82,5 +80,18 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 ,"/v2/**"
                 ,"/swagger-ui.html/**").order(1);
         registry.addInterceptor(new RefreshTokenInterceptor(stringRedisTemplate)).addPathPatterns("/**").order(0);
+    }
+
+    @Override
+    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+        FastJsonHttpMessageConverter converter = new FastJsonHttpMessageConverter();
+        List<MediaType> mediaTypes = new ArrayList<>(16);
+        mediaTypes.add(MediaType.APPLICATION_ATOM_XML);
+        mediaTypes.add(MediaType.APPLICATION_CBOR);
+        mediaTypes.add(MediaType.APPLICATION_FORM_URLENCODED);
+        mediaTypes.add(MediaType.APPLICATION_JSON);
+        mediaTypes.add(MediaType.APPLICATION_OCTET_STREAM);
+        converter.setSupportedMediaTypes(mediaTypes);
+        converters.add(converter);
     }
 }

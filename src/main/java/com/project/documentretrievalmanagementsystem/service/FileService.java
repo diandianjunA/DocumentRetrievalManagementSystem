@@ -13,5 +13,5 @@ public interface FileService {
     String upload(MultipartFile file,String basePath);
     ResponseEntity<byte[]> download(HttpSession session, String basePath, String fileName) throws IOException;
     ResponseEntity<byte[]> download(HttpServletResponse response, String location) throws IOException;
-    void downloadFile(HttpServletResponse response,String location) throws IOException;
+    void downloadFile(HttpServletResponse response, String location) throws IOException;
 }
