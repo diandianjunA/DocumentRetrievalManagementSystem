@@ -10,6 +10,9 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.io.LineNumberReader;
+import java.io.InputStreamReader;
 import java.util.List;
 
 /**
@@ -33,7 +36,31 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
         Material material = materialService.getById(materialId);
         //获取资料地址
         String location = material.getLocation();
-        System.out.println(location);
-        return location;
+
+
+        String result = "";
+        try {
+            //开启了命令执行器，输入指令执行python脚本
+            Process process = Runtime.getRuntime()
+                    .exec("E:\\develop\\Anaconda\\Anaconda3\\envs\\pytorch\\python.exe " +
+                            "D:\\MHC\\pycharm\\pythonProject\\predict.py " +
+                            "--model_path D:\\MHC\\pycharm\\pythonProject./cpt-base " +
+                            "--file_path D:\\MHC\\pycharm\\pythonProject./test.txt " +
+                            "--sum_min_len 40");
+
+            //这种方式获取返回值的方式是需要用python打印输出，然后java去获取命令行的输出，在java返回
+            InputStreamReader ir = new InputStreamReader(process.getInputStream(),"GB2312");
+            LineNumberReader input = new LineNumberReader(ir);
+            //读取命令行的输出
+            result = input.readLine();
+            input.close();
+            ir.close();
+
+        } catch (IOException e) {
+            System.out.println("调用python脚本并读取结果时出错：" + e.getMessage());
+        }
+        return result;
+
+
     }
 }
