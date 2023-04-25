@@ -3,6 +3,7 @@ package com.project.documentretrievalmanagementsystem;
 import com.project.documentretrievalmanagementsystem.dto.EsQueryDto;
 import com.project.documentretrievalmanagementsystem.dto.MaterialDto;
 import com.project.documentretrievalmanagementsystem.entity.Material;
+import com.project.documentretrievalmanagementsystem.entity.Scheme;
 import com.project.documentretrievalmanagementsystem.entity.User;
 import com.project.documentretrievalmanagementsystem.mapper.UserMapper;
 import com.project.documentretrievalmanagementsystem.service.IMaterialService;
@@ -30,6 +31,7 @@ class DocumentRetrievalManagementSystemApplicationTests {
     IMaterialService materialService;
     @Autowired
     ISchemeService schemeService;
+
     @Test
     void contextLoads() {
         for (User user : userMapper.selectList(null)) {
@@ -58,15 +60,14 @@ class DocumentRetrievalManagementSystemApplicationTests {
         esQueryDto.setSize(5);
         esQueryDto.setWord("系统");
         List<MaterialDto> materialDtos = materialService.fuzzyQuery(esQueryDto);
-        for(MaterialDto materialDto:materialDtos){
+        for (MaterialDto materialDto : materialDtos) {
             System.out.println(materialDto);
         }
     }
 
     @Test
     void generateSummary() throws Exception {
-        String summary = schemeService.generateSummary(4);
+        String summary = schemeService.generateSummary( 4);
         System.out.println(summary);
     }
-
 }

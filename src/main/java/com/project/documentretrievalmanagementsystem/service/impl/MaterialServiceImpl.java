@@ -56,7 +56,7 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
         Integer currentId = UserHolder.getUser().getId();
         material.setUserId(Math.toIntExact(currentId));
         material.setLocation(basePath + originalName);
-        save(material);
+        save(material);     //保存到数据库
         return material;
     }
 

@@ -34,7 +34,6 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
     @Value("${my.basePath}")
     private String basePath;
 
-
     @Override
     //调用python脚本生成资料摘要
     //方案生成
@@ -44,16 +43,16 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
         String location = material.getLocation();
         //将资料转换为txt格式
         TransTotxt.DocxToTxt(location,basePath);
-        System.out.println(location);
         String result = "";
+        String Path = basePath+"scheme.txt";
         try {
             //开启了命令执行器，输入指令执行python脚本
             Process process = Runtime.getRuntime()
                     .exec("E:\\develop\\Anaconda\\Anaconda3\\envs\\pytorch\\python.exe " +
                             "D:\\MHC\\pycharm\\pythonProject\\predict.py " +
-                            "--model_path D:\\MHC\\pycharm\\pythonProject./cpt-base " +
-                            "--file_path D:\\code\\source\\material\\scheme.txt" +
-                            "--sum_min_len 40");
+                            "--model_path D:\\MHC\\pycharm\\pythonProject\\cpt-base " +
+                            "--file_path "+Path+" " +
+                            "--sum_min_len 50");
 
             //这种方式获取返回值的方式是需要用python打印输出，然后java去获取命令行的输出，在java返回
             InputStreamReader ir = new InputStreamReader(process.getInputStream(),"GB2312");
@@ -62,14 +61,10 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
             result = input.readLine();
             input.close();
             ir.close();
-            System.out.println(""+basePath+"scheme.txt");
-
         } catch (IOException e) {
             System.out.println("调用python脚本并读取结果时出错：" + e.getMessage());
         }
         return result;
-
     }
-
 
 }

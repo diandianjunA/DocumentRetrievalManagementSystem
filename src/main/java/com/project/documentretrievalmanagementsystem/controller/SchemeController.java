@@ -1,6 +1,7 @@
 package com.project.documentretrievalmanagementsystem.controller;
 
 
+import com.project.documentretrievalmanagementsystem.common.R;
 import com.project.documentretrievalmanagementsystem.service.FileService;
 import com.project.documentretrievalmanagementsystem.service.IMaterialService;
 import com.project.documentretrievalmanagementsystem.service.IProjectService;
@@ -36,6 +37,14 @@ public class SchemeController {
     @Autowired
     ISchemeService schemeService;
 
-    //展示所选资料的生成摘要
+    //方案生成
+    @PostMapping("/generateSummary")
+    @ApiOperation("生成方案")
+    public R<String> generateSummary(Integer materialId){
+        String result = schemeService.generateSummary(materialId);
+        return R.success(result);
+    }
+
+
 
 }
