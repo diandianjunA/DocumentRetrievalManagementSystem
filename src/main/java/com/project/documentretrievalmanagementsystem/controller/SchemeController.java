@@ -2,6 +2,7 @@ package com.project.documentretrievalmanagementsystem.controller;
 
 
 import com.project.documentretrievalmanagementsystem.common.R;
+import com.project.documentretrievalmanagementsystem.entity.Scheme;
 import com.project.documentretrievalmanagementsystem.service.FileService;
 import com.project.documentretrievalmanagementsystem.service.IMaterialService;
 import com.project.documentretrievalmanagementsystem.service.IProjectService;
@@ -38,13 +39,19 @@ public class SchemeController {
     ISchemeService schemeService;
 
     //方案生成
-    @PostMapping("/generateSummary")
+    @PostMapping("/generate")
     @ApiOperation("生成方案")
     public R<String> generateSummary(Integer materialId){
         String result = schemeService.generateSummary(materialId);
         return R.success(result);
     }
 
-
+    //方案保存
+    @PostMapping("/save")
+    @ApiOperation("保存方案")
+    public R<Scheme> saveScheme(String summary, String schemeName, Integer materialId){
+        Scheme scheme = schemeService.saveScheme(summary,schemeName,materialId);
+        return R.success(scheme);
+    }
 
 }

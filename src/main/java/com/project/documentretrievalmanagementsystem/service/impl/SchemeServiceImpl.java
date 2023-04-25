@@ -67,4 +67,24 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
         return result;
     }
 
+    @Override
+    //方案保存
+    public Scheme saveScheme(String summary,String schemeName,Integer materialId) {
+        String Path = basePath + "scheme.txt";
+        Material material = materialService.getById(materialId);
+        //获取该material的数据库信息
+        String name = material.getName();
+        Integer projectId = material.getProjectId();
+        Integer userid = material.getUserId();
+        //存入scheme数据库
+        Scheme scheme = new Scheme();
+        scheme.setName(schemeName);
+        scheme.setMaterialId(materialId);
+        scheme.setUserId(userid);
+        scheme.setProjectId(projectId);
+        scheme.setLocation(Path + "\\scheme.txt");
+        scheme.setSummary(summary);
+        save(scheme);
+        return scheme;
+    }
 }

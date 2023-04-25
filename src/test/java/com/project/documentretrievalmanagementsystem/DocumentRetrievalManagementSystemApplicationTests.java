@@ -70,4 +70,11 @@ class DocumentRetrievalManagementSystemApplicationTests {
         String summary = schemeService.generateSummary( 4);
         System.out.println(summary);
     }
+
+    @Test
+    void saveScheme() throws Exception {
+        Scheme scheme = schemeService.saveScheme("测试方案","测试方案",4);
+        System.out.println(scheme.toString());
+    }
+
 }
