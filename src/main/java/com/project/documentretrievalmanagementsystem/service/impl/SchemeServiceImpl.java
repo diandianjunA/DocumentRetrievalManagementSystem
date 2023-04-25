@@ -9,6 +9,7 @@ import com.project.documentretrievalmanagementsystem.service.ISchemeService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.project.documentretrievalmanagementsystem.utils.TransTotxt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -29,21 +30,20 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
     @Autowired
     FileService fileService;
     @Autowired
-    MaterialServiceImpl materialService;
-    @Autowired
-    MaterialServiceImpl materialServiceImpl;
+    IMaterialService materialService;
+    @Value("${my.basePath}")
+    private String basePath;
 
 
     @Override
     //调用python脚本生成资料摘要
+    //方案生成
     public String generateSummary(Integer materialId) {
         Material material = materialService.getById(materialId);
         //获取资料地址
-        System.out.println(material.toString());
         String location = material.getLocation();
-        System.out.println(location);
         //将资料转换为txt格式
-        TransTotxt.DocxToTxt(location);
+        TransTotxt.DocxToTxt(location,basePath);
         System.out.println(location);
         String result = "";
         try {
@@ -52,7 +52,7 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
                     .exec("E:\\develop\\Anaconda\\Anaconda3\\envs\\pytorch\\python.exe " +
                             "D:\\MHC\\pycharm\\pythonProject\\predict.py " +
                             "--model_path D:\\MHC\\pycharm\\pythonProject./cpt-base " +
-                            "--file_path D:\\code\\scheme\\scheme.txt" +
+                            "--file_path D:\\code\\source\\material\\scheme.txt" +
                             "--sum_min_len 40");
 
             //这种方式获取返回值的方式是需要用python打印输出，然后java去获取命令行的输出，在java返回
@@ -62,12 +62,14 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
             result = input.readLine();
             input.close();
             ir.close();
+            System.out.println(""+basePath+"scheme.txt");
 
         } catch (IOException e) {
             System.out.println("调用python脚本并读取结果时出错：" + e.getMessage());
         }
         return result;
 
-
     }
+
+
 }

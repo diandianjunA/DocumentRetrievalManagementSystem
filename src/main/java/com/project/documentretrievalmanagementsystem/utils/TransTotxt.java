@@ -9,7 +9,9 @@ import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 import org.apache.xmlbeans.XmlException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 
 /************************
@@ -25,7 +27,7 @@ import org.springframework.beans.factory.annotation.Value;
 public class TransTotxt {
 
     //docx格式文件转为txt格式
-    public static void DocxToTxt(String location) {
+    public static void DocxToTxt(String location,String basePath) {
         try {
             // 读取Word文档
             File file = new File(location);
@@ -35,7 +37,8 @@ public class TransTotxt {
             fis.close();
 
             // 将内容写入txt文件
-            FileOutputStream fos = new FileOutputStream("D:\\code\\scheme\\scheme.txt");
+            String PATH = basePath+"scheme.txt";
+            FileOutputStream fos = new FileOutputStream(PATH);
             fos.write(text.getBytes());
             fos.close();
         } catch (IOException e) {
