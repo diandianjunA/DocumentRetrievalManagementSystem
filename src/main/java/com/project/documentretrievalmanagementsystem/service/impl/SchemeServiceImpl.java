@@ -152,7 +152,7 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
             //开启了命令执行器，输入指令执行python脚本
             Process processA = Runtime.getRuntime()
                     .exec("E:\\develop\\Anaconda\\Anaconda3\\envs\\pytorch\\python.exe " +
-                            "D:\\MHC\\pycharm\\pythonProject\\similarity.py " +
+                            "D:\\MHC\\pycharm\\pythonProject\\predict.py " +
                             "--model_path D:\\MHC\\pycharm\\pythonProject\\cpt-base " +
                             "--file_path "+PathA+" " +
                             "--sum_min_len 50 " +
@@ -175,11 +175,11 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
             //开启了命令执行器，输入指令执行python脚本
             Process processB = Runtime.getRuntime()
                     .exec("E:\\develop\\Anaconda\\Anaconda3\\envs\\pytorch\\python.exe " +
-                            "D:\\MHC\\pycharm\\pythonProject\\similarity.py " +
+                            "D:\\MHC\\pycharm\\pythonProject\\predict.py " +
                             "--model_path D:\\MHC\\pycharm\\pythonProject\\cpt-base " +
                             "--file_path "+PathB+" " +
                             "--sum_min_len 50 " +
-                            "----gen_vec 1");
+                            "--gen_vec 1");
 
             //这种方式获取返回值的方式是需要用python打印输出，然后java去获取命令行的输出，在java返回
             InputStreamReader ir = new InputStreamReader(processB.getInputStream(),"GB2312");

@@ -90,7 +90,7 @@ class DocumentRetrievalManagementSystemApplicationTests {
 
     @Test
     void similarity() throws Exception {
-        double similarity = schemeService.similarity(4, 5);
+        double similarity = schemeService.similarity(4, 6);
         System.out.println(similarity);
     }
 }
