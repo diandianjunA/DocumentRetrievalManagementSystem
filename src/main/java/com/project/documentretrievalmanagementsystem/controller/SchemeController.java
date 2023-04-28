@@ -9,12 +9,18 @@ import com.project.documentretrievalmanagementsystem.service.IProjectService;
 import com.project.documentretrievalmanagementsystem.service.ISchemeService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
-import org.springframework.web.bind.annotation.RestController;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 
 /**
  * <p>
@@ -52,6 +58,25 @@ public class SchemeController {
     public R<Scheme> saveScheme(String summary, String schemeName, Integer materialId){
         Scheme scheme = schemeService.saveScheme(summary,schemeName,materialId);
         return R.success(scheme);
+    }
+
+    //数据库中scheme导出excel表格中
+    @GetMapping("/download")
+    @ApiOperation("导出方案")
+    public void downloadExcel(Integer materialId,HttpServletResponse response) throws IOException {
+        //从数据库中获取表数据
+        List<Scheme> list = schemeService.getSchemeByMaterialId(materialId);
+        //生成Excel表格
+        HSSFWorkbook wb = schemeService.downloadExcel(list);
+        OutputStream output = response.getOutputStream();
+        // 文件名中文形式
+        String fileName = "方案-" + new SimpleDateFormat("yyyyMMdd_HHmmssSSS").format(new Date()) + ".xls";
+        fileName = new String(fileName.getBytes("UTF-8"), "ISO-8859-1");
+        response.setContentType("application/octet-stream;charset=ISO-8859-1");
+        response.setHeader("Content-Disposition", "attachment; filename=\""+fileName+"\"");
+
+        wb.write(output);
+        output.close();
     }
 
 }

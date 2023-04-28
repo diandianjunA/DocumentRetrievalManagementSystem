@@ -9,6 +9,8 @@
         <result column="project_id" property="projectId" />
         <result column="material_id" property="materialId" />
         <result column="location" property="location" />
+        <result column="user_id" property="userId" />
+        <result column="summary" property="summary" />
     </resultMap>
 
 </mapper>

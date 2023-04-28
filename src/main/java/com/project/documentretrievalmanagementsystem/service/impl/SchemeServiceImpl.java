@@ -8,6 +8,8 @@ import com.project.documentretrievalmanagementsystem.service.IMaterialService;
 import com.project.documentretrievalmanagementsystem.service.ISchemeService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.project.documentretrievalmanagementsystem.utils.TransTotxt;
+import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -87,4 +89,45 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
         save(scheme);
         return scheme;
     }
+
+    @Override
+    public HSSFWorkbook downloadExcel(List<Scheme> list) {
+        String[] excelHeader = { "Id", "方案名", "用户Id", "资料Id", "项目Id", "资料地址", "摘要"};
+        HSSFWorkbook wb = new HSSFWorkbook();
+        //创建HSSFSheet对象
+        HSSFSheet sheet = wb.createSheet("关系表");
+        HSSFRow row = sheet.createRow((int) 0);
+        HSSFCellStyle style = wb.createCellStyle();
+        style.setAlignment(HorizontalAlignment.CENTER);//水平居中
+
+        for (int i = 0; i < excelHeader.length; i++) {
+            HSSFCell cell = row.createCell(i);
+            cell.setCellValue(excelHeader[i]);
+            cell.setCellStyle(style);
+            sheet.autoSizeColumn(i);
+            //设置指定列的列宽，256 * 50这种写法是因为width参数单位是单个字符的256分之一
+            sheet.setColumnWidth(cell.getColumnIndex(), 100 * 50);
+        }
+
+        for (int i = 0; i < list.size(); i++) {
+            row = sheet.createRow(i + 1);
+            Scheme scheme = list.get(i);
+            row.createCell(0).setCellValue(scheme.getId());
+            row.createCell(1).setCellValue(scheme.getName());
+            row.createCell(2).setCellValue(scheme.getUserId());
+            row.createCell(3).setCellValue(scheme.getMaterialId());
+            row.createCell(4).setCellValue(scheme.getProjectId());
+            row.createCell(5).setCellValue(scheme.getLocation());
+            row.createCell(6).setCellValue(scheme.getSummary());
+        }
+        return wb;
+    }
+
+    @Override
+    public List<Scheme> getSchemeByMaterialId(Integer MaterialId) {
+        LambdaQueryWrapper<Scheme> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Scheme::getMaterialId,MaterialId);
+        return list(wrapper);
+    }
 }
+

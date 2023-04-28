@@ -13,6 +13,7 @@ import io.github.swagger2markup.Swagger2MarkupConfig;
 import io.github.swagger2markup.Swagger2MarkupConverter;
 import io.github.swagger2markup.builder.Swagger2MarkupConfigBuilder;
 import io.github.swagger2markup.markup.builder.MarkupLanguage;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -74,6 +75,13 @@ class DocumentRetrievalManagementSystemApplicationTests {
     @Test
     void saveScheme() throws Exception {
         Scheme scheme = schemeService.saveScheme("测试方案","测试方案",4);
+        System.out.println(scheme.toString());
+    }
+
+    @Test
+    void downloadScheme() throws Exception {
+        List list = schemeService.getSchemeByMaterialId(4);
+        HSSFWorkbook scheme = schemeService.downloadExcel(list);
         System.out.println(scheme.toString());
     }
 
