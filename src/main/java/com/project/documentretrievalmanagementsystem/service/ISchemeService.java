@@ -3,6 +3,7 @@ package com.project.documentretrievalmanagementsystem.service;
 import com.project.documentretrievalmanagementsystem.entity.Scheme;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.util.List;
 
@@ -22,8 +23,10 @@ public interface ISchemeService extends IService<Scheme> {
     public Scheme saveScheme(String summary,String schemeName,Integer materialId);
 
     //数据库中scheme导出excel表格中(导出全部方案)
-    HSSFWorkbook downloadExcel(List<Scheme> list);
+    XSSFWorkbook downloadExcel(List<Scheme> list);
 
     List<Scheme> getSchemeByMaterialId(Integer MaterialId);
+
+    public double similarity(Integer materialIdA, Integer materialIdB);
 }
 

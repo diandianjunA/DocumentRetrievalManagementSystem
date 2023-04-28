@@ -5,6 +5,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.File;
+import java.nio.file.Path;
+import java.text.NumberFormat;
+
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
@@ -24,7 +27,7 @@ import org.springframework.stereotype.Component;
  ************************/
 
 
-public class TransTotxt {
+public class TransTotxtS {
 
     //docx格式文件转为txt格式
     public static void DocxToTxt(String location,String basePath) {
@@ -37,8 +40,8 @@ public class TransTotxt {
             fis.close();
 
             // 将内容写入txt文件
-            String PATH = basePath+"scheme.txt";
-            FileOutputStream fos = new FileOutputStream(PATH);
+            //String PATH = basePath+"similarity.txt";
+            FileOutputStream fos = new FileOutputStream(basePath);
             fos.write(text.getBytes());
             fos.close();
         } catch (IOException e) {
@@ -48,5 +51,25 @@ public class TransTotxt {
         } catch (XmlException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    //将小数转换为百分数
+    public static String doubleToPercent(double num) {
+        NumberFormat percent = NumberFormat.getPercentInstance();
+        percent.setMaximumFractionDigits(2);
+        return percent.format(num);
+    }
+
+    //计算两个向量的余弦相似度
+    public static double cosineSimilarity(double[] vec1, double[] vec2) {
+        double dotProduct = 0.0;
+        double normA = 0.0;
+        double normB = 0.0;
+        for (int i = 0; i < vec1.length; i++) {
+            dotProduct += vec1[i] * vec2[i];
+            normA += vec1[i] * vec1[i];
+            normB += vec2[i] * vec2[i];
+        }
+        return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
     }
 }

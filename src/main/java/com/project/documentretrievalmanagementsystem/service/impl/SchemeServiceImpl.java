@@ -8,8 +8,11 @@ import com.project.documentretrievalmanagementsystem.service.IMaterialService;
 import com.project.documentretrievalmanagementsystem.service.ISchemeService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.project.documentretrievalmanagementsystem.utils.TransTotxt;
-import org.apache.poi.hssf.usermodel.*;
+import com.project.documentretrievalmanagementsystem.utils.TransTotxtS;
+import io.swagger.models.auth.In;
+import org.apache.poi.xssf.usermodel.*;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -91,17 +94,17 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
     }
 
     @Override
-    public HSSFWorkbook downloadExcel(List<Scheme> list) {
+    public XSSFWorkbook downloadExcel(List<Scheme> list) {
         String[] excelHeader = { "Id", "方案名", "用户Id", "资料Id", "项目Id", "资料地址", "摘要"};
-        HSSFWorkbook wb = new HSSFWorkbook();
-        //创建HSSFSheet对象
-        HSSFSheet sheet = wb.createSheet("关系表");
-        HSSFRow row = sheet.createRow((int) 0);
-        HSSFCellStyle style = wb.createCellStyle();
-        style.setAlignment(HorizontalAlignment.CENTER);//水平居中
+        XSSFWorkbook wb = new XSSFWorkbook();
+        //创建XSSFSheet对象
+        XSSFSheet sheet = wb.createSheet("关系表");
+        XSSFRow row = sheet.createRow((int) 0);
+        XSSFCellStyle style = wb.createCellStyle();
+        //style.setAlignment(HorizontalAlignment.CENTER);//水平居中
 
         for (int i = 0; i < excelHeader.length; i++) {
-            HSSFCell cell = row.createCell(i);
+            XSSFCell cell = row.createCell(i);
             cell.setCellValue(excelHeader[i]);
             cell.setCellStyle(style);
             sheet.autoSizeColumn(i);
@@ -129,5 +132,84 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
         wrapper.eq(Scheme::getMaterialId,MaterialId);
         return list(wrapper);
     }
+
+    @Override
+    public double similarity(Integer materialIdA, Integer materialIdB) {
+        Material materialA = materialService.getById(materialIdA);
+        Material materialB = materialService.getById(materialIdB);
+        //获取资料地址
+        String locationA = materialA.getLocation();
+        String locationB = materialB.getLocation();
+        //将资料转换为txt格式
+        String PathA = basePath+"similarityA.txt";
+        String PathB = basePath+"similarityB.txt";
+        TransTotxtS.DocxToTxt(locationA,PathA);
+        TransTotxtS.DocxToTxt(locationB,PathB);
+        String vecA = "";
+        String vecB = "";
+        //获取第一篇文章的向量
+        try {
+            //开启了命令执行器，输入指令执行python脚本
+            Process processA = Runtime.getRuntime()
+                    .exec("E:\\develop\\Anaconda\\Anaconda3\\envs\\pytorch\\python.exe " +
+                            "D:\\MHC\\pycharm\\pythonProject\\similarity.py " +
+                            "--model_path D:\\MHC\\pycharm\\pythonProject\\cpt-base " +
+                            "--file_path "+PathA+" " +
+                            "--sum_min_len 50 " +
+                            "--gen_vec 1");
+
+            //这种方式获取返回值的方式是需要用python打印输出，然后java去获取命令行的输出，在java返回
+            InputStreamReader ir = new InputStreamReader(processA.getInputStream(),"GB2312");
+            LineNumberReader input = new LineNumberReader(ir);
+            //读取命令行的输出
+            vecA= input.readLine();
+            System.out.println(vecA);
+            input.close();
+            ir.close();
+        } catch (IOException e) {
+            System.out.println("调用python脚本并读取结果时出错：" + e.getMessage());
+        }
+
+        //获取第二篇文章的向量
+        try {
+            //开启了命令执行器，输入指令执行python脚本
+            Process processB = Runtime.getRuntime()
+                    .exec("E:\\develop\\Anaconda\\Anaconda3\\envs\\pytorch\\python.exe " +
+                            "D:\\MHC\\pycharm\\pythonProject\\similarity.py " +
+                            "--model_path D:\\MHC\\pycharm\\pythonProject\\cpt-base " +
+                            "--file_path "+PathB+" " +
+                            "--sum_min_len 50 " +
+                            "----gen_vec 1");
+
+            //这种方式获取返回值的方式是需要用python打印输出，然后java去获取命令行的输出，在java返回
+            InputStreamReader ir = new InputStreamReader(processB.getInputStream(),"GB2312");
+            LineNumberReader input = new LineNumberReader(ir);
+            //读取命令行的输出
+            vecB= input.readLine();
+            input.close();
+            ir.close();
+        } catch (IOException e) {
+            System.out.println("调用python脚本并读取结果时出错：" + e.getMessage());
+        }
+
+        //将字符串转换为double数组
+        String[] vecAstr = vecA.split(",");
+        String[] vecBstr = vecB.split(",");
+        double[] vecAdouble = new double[vecAstr.length];
+        double[] vecBdouble = new double[vecBstr.length];
+        for(int i=1;i<vecAstr.length-1;i++){
+            vecAdouble[i] = Double.parseDouble(vecAstr[i]);
+        }
+        for(int i=1;i<vecBstr.length-1;i++){
+            vecBdouble[i] = Double.parseDouble(vecBstr[i]);
+        }
+        //计算两个向量的余弦相似度
+        double similarity = TransTotxtS.cosineSimilarity(vecAdouble,vecBdouble);
+        //将小数转换为百分数
+        //String similaritystr = TransTotxtS.doubleToPercent(similarity);
+        //返回相似度
+        return similarity;
+    }
+
 }
 

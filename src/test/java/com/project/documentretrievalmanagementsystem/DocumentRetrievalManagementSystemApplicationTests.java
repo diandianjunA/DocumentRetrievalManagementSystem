@@ -13,10 +13,12 @@ import io.github.swagger2markup.Swagger2MarkupConfig;
 import io.github.swagger2markup.Swagger2MarkupConverter;
 import io.github.swagger2markup.builder.Swagger2MarkupConfigBuilder;
 import io.github.swagger2markup.markup.builder.MarkupLanguage;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -24,6 +26,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@RunWith(org.springframework.test.context.junit4.SpringRunner.class)
 class DocumentRetrievalManagementSystemApplicationTests {
 
     @Autowired
@@ -81,8 +84,13 @@ class DocumentRetrievalManagementSystemApplicationTests {
     @Test
     void downloadScheme() throws Exception {
         List list = schemeService.getSchemeByMaterialId(4);
-        HSSFWorkbook scheme = schemeService.downloadExcel(list);
+        XSSFWorkbook scheme = schemeService.downloadExcel(list);
         System.out.println(scheme.toString());
     }
 
+    @Test
+    void similarity() throws Exception {
+        double similarity = schemeService.similarity(4, 5);
+        System.out.println(similarity);
+    }
 }

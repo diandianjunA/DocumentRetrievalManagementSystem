@@ -10,6 +10,7 @@ import com.project.documentretrievalmanagementsystem.service.ISchemeService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -67,10 +68,10 @@ public class SchemeController {
         //从数据库中获取表数据
         List<Scheme> list = schemeService.getSchemeByMaterialId(materialId);
         //生成Excel表格
-        HSSFWorkbook wb = schemeService.downloadExcel(list);
+        XSSFWorkbook wb = schemeService.downloadExcel(list);
         OutputStream output = response.getOutputStream();
         // 文件名中文形式
-        String fileName = "方案-" + new SimpleDateFormat("yyyyMMdd_HHmmssSSS").format(new Date()) + ".xls";
+        String fileName = "方案-" + new SimpleDateFormat("yyyyMMdd_HHmmssSSS").format(new Date()) + ".xlsx";
         fileName = new String(fileName.getBytes("UTF-8"), "ISO-8859-1");
         response.setContentType("application/octet-stream;charset=ISO-8859-1");
         response.setHeader("Content-Disposition", "attachment; filename=\""+fileName+"\"");
