@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -117,5 +118,12 @@ public class ProjectController {
         }else{
             return R.error("删除失败");
         }
+    }
+
+    @GetMapping("/similarity")
+    @ApiOperation("项目相似度")
+    public R<Double> similarity(@ApiParam("项目Aid") Integer projectIdA, @ApiParam("项目Bid") Integer projectIdB) throws IOException {
+            double similarity = projectService.similarity(projectIdA, projectIdB);
+        return R.success(similarity);
     }
 }
