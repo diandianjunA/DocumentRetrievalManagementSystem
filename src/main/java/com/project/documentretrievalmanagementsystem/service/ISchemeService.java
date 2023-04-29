@@ -27,6 +27,5 @@ public interface ISchemeService extends IService<Scheme> {
 
     List<Scheme> getSchemeByMaterialId(Integer MaterialId);
 
-    public double similarity(Integer materialIdA, Integer materialIdB);
 }
 

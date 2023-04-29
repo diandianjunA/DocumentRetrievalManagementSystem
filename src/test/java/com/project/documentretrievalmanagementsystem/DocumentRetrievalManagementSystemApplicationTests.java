@@ -8,6 +8,7 @@ import com.project.documentretrievalmanagementsystem.entity.User;
 import com.project.documentretrievalmanagementsystem.mapper.UserMapper;
 import com.project.documentretrievalmanagementsystem.service.IMaterialService;
 import com.project.documentretrievalmanagementsystem.service.ISchemeService;
+import com.project.documentretrievalmanagementsystem.service.impl.ProjectServiceImpl;
 import com.project.documentretrievalmanagementsystem.service.impl.SchemeServiceImpl;
 import io.github.swagger2markup.Swagger2MarkupConfig;
 import io.github.swagger2markup.Swagger2MarkupConverter;
@@ -35,6 +36,8 @@ class DocumentRetrievalManagementSystemApplicationTests {
     IMaterialService materialService;
     @Autowired
     ISchemeService schemeService;
+    @Autowired
+    ProjectServiceImpl projectService;
 
     @Test
     void contextLoads() {
@@ -88,9 +91,15 @@ class DocumentRetrievalManagementSystemApplicationTests {
         System.out.println(scheme.toString());
     }
 
-    @Test
+   /* @Test
     void similarity() throws Exception {
         double similarity = schemeService.similarity(4, 6);
+        System.out.println(similarity);
+    }*/
+
+    @Test
+    void similarity() throws Exception {
+        double similarity = projectService.similarity(1, 4);
         System.out.println(similarity);
     }
 }

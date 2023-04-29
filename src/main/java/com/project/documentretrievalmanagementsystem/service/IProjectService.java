@@ -3,6 +3,7 @@ package com.project.documentretrievalmanagementsystem.service;
 import com.project.documentretrievalmanagementsystem.entity.Project;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -15,4 +16,7 @@ import java.util.Map;
  */
 public interface IProjectService extends IService<Project> {
     Map<Integer,Project> getProjectMap();
+
+    //计算两个项目之间的相似度
+    public double similarity(Integer projectIdA, Integer projectIdB) throws IOException;
 }

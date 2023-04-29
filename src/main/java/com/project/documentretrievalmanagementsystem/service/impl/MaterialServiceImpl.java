@@ -18,6 +18,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.project.documentretrievalmanagementsystem.service.IProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -44,6 +45,8 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
     private String basePath;
     @Autowired
     ElasticsearchClient elasticsearchClient;
+
+    @Lazy
     @Autowired
     IProjectService projectService;
 
