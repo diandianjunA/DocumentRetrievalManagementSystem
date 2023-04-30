@@ -6,6 +6,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.project.documentretrievalmanagementsystem.common.R;
 import com.project.documentretrievalmanagementsystem.common.UserHolder;
+import com.project.documentretrievalmanagementsystem.dto.ProjectDto;
 import com.project.documentretrievalmanagementsystem.entity.Material;
 import com.project.documentretrievalmanagementsystem.entity.Project;
 import com.project.documentretrievalmanagementsystem.service.IMaterialService;
@@ -125,5 +126,12 @@ public class ProjectController {
     public R<Double> similarity(@ApiParam("项目Aid") Integer projectIdA, @ApiParam("项目Bid") Integer projectIdB) throws IOException {
             double similarity = projectService.similarity(projectIdA, projectIdB);
         return R.success(similarity);
+    }
+
+    @GetMapping("/analyze")
+    @ApiOperation("项目分析")
+    public R<List<ProjectDto>> analyze(@ApiParam("项目id") Integer projectId) throws IOException {
+        List<ProjectDto> analysis = projectService.projectAnalyze(projectId);
+        return R.success(analysis);
     }
 }

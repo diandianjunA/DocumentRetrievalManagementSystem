@@ -2,6 +2,7 @@ package com.project.documentretrievalmanagementsystem;
 
 import com.project.documentretrievalmanagementsystem.dto.EsQueryDto;
 import com.project.documentretrievalmanagementsystem.dto.MaterialDto;
+import com.project.documentretrievalmanagementsystem.dto.ProjectDto;
 import com.project.documentretrievalmanagementsystem.entity.Material;
 import com.project.documentretrievalmanagementsystem.entity.Scheme;
 import com.project.documentretrievalmanagementsystem.entity.User;
@@ -101,5 +102,13 @@ class DocumentRetrievalManagementSystemApplicationTests {
     void similarity() throws Exception {
         double similarity = projectService.similarity(1, 4);
         System.out.println(similarity);
+    }
+
+    @Test
+    void projectAnalyze() throws Exception {
+        List<ProjectDto> projectDtos = projectService.projectAnalyze(1);
+        for (ProjectDto projectDto : projectDtos) {
+            System.out.println(projectDto);
+        }
     }
 }

@@ -29,16 +29,16 @@ public class Project implements Serializable {
 
     @ApiModelProperty(value = "项目id")
     @TableId(value = "id", type = IdType.AUTO)
-    private Integer id;
+    protected Integer id;
 
     @ApiModelProperty(value = "项目名称")
-    private String name;
+    protected String name;
 
     @ApiModelProperty(value = "项目类型")
-    private String category;
+    protected String category;
 
     @ApiModelProperty(value = "项目备注")
-    private String remark;
+    protected String remark;
 
     @ApiModelProperty(value = "所属用户的id")
     private Integer userId;
