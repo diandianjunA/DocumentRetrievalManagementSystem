@@ -1,5 +1,6 @@
 package com.project.documentretrievalmanagementsystem;
 
+import com.github.pagehelper.PageInfo;
 import com.project.documentretrievalmanagementsystem.dto.EsQueryDto;
 import com.project.documentretrievalmanagementsystem.dto.MaterialDto;
 import com.project.documentretrievalmanagementsystem.dto.ProjectDto;
@@ -42,9 +43,8 @@ class DocumentRetrievalManagementSystemApplicationTests {
 
     @Test
     void contextLoads() {
-        for (User user : userMapper.selectList(null)) {
-            System.out.println(user);
-        }
+        PageInfo<MaterialDto> pagedMaterial = materialService.getPagedMaterial(2, 3, 5, null, null, null);
+        System.out.println(pagedMaterial);
     }
 
     @Test
@@ -100,7 +100,7 @@ class DocumentRetrievalManagementSystemApplicationTests {
 
     @Test
     void similarity() throws Exception {
-        double similarity = projectService.similarity(1, 4);
+        double similarity = projectService.similarity(1, 2);
         System.out.println(similarity);
     }
 

@@ -39,6 +39,12 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
     IMaterialService materialService;
     @Value("${my.basePath}")
     private String basePath;
+    @Value("${my.modelPath}")
+    private String modelPath;
+    @Value("${my.pythonPath}")
+    private String pythonPath;
+    @Value("${my.scriptPath}")
+    private String scriptPath;
 
 
     @Override
@@ -70,9 +76,9 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
         try {
             //开启了命令执行器，输入指令执行python脚本
             Process processA = Runtime.getRuntime()
-                    .exec("E:\\develop\\Anaconda\\Anaconda3\\envs\\pytorch\\python.exe " +
-                            "D:\\MHC\\pycharm\\pythonProject\\predict.py " +
-                            "--model_path D:\\MHC\\pycharm\\pythonProject\\cpt-base " +
+                    .exec(pythonPath+" " +
+                            scriptPath+"/predict.py " +
+                            "--model_path "+modelPath+" " +
                             "--file_path " + filePathA + " " +
                             "--sum_min_len 50 " +
                             "--gen_vec 1");
@@ -82,7 +88,6 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
             LineNumberReader input = new LineNumberReader(ir);
             //读取命令行的输出
             vecA = input.readLine();
-            System.out.println(vecA);
             input.close();
             ir.close();
         } catch (IOException e) {
@@ -93,9 +98,9 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
         try {
             //开启了命令执行器，输入指令执行python脚本
             Process processB = Runtime.getRuntime()
-                    .exec("E:\\develop\\Anaconda\\Anaconda3\\envs\\pytorch\\python.exe " +
-                            "D:\\MHC\\pycharm\\pythonProject\\predict.py " +
-                            "--model_path D:\\MHC\\pycharm\\pythonProject\\cpt-base " +
+                    .exec(pythonPath+" " +
+                            scriptPath+"/predict.py " +
+                            "--model_path "+modelPath+" " +
                             "--file_path " + filePathB + " " +
                             "--sum_min_len 50 " +
                             "--gen_vec 1");

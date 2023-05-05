@@ -115,12 +115,15 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
                         )).from(esQueryDto.getFrom()).size(esQueryDto.getSize()),
                 HashMap.class);
         List<Hit<HashMap>> hits = search.hits().hits();
-        System.out.println(hits);
         ArrayList<MaterialDto> res = new ArrayList<>();
         for (Hit<HashMap> hit:hits){
             HashMap source = hit.source();
             HashMap file = (HashMap) source.get("file");
             String location = (String) file.get("url");
+            String suffix = location.substring(location.lastIndexOf('.') + 1);
+            if(!suffix.equals("docx")){
+                continue;
+            }
             location=location.substring(7);
             LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
             materialLambdaQueryWrapper.eq(Material::getLocation,location);

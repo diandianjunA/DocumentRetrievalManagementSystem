@@ -38,6 +38,12 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
     IMaterialService materialService;
     @Value("${my.basePath}")
     private String basePath;
+    @Value("${my.modelPath}")
+    private String modelPath;
+    @Value("${my.pythonPath}")
+    private String pythonPath;
+    @Value("${my.scriptPath}")
+    private String scriptPath;
 
     @Override
     //调用python脚本生成资料摘要
@@ -53,9 +59,9 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
         try {
             //开启了命令执行器，输入指令执行python脚本
             Process process = Runtime.getRuntime()
-                    .exec("E:\\develop\\Anaconda\\Anaconda3\\envs\\pytorch\\python.exe " +
-                            "D:\\MHC\\pycharm\\pythonProject\\predict.py " +
-                            "--model_path D:\\MHC\\pycharm\\pythonProject\\cpt-base " +
+                    .exec(pythonPath+" " +
+                            scriptPath+"/predict.py " +
+                            "--model_path "+modelPath+" " +
                             "--file_path "+Path+" " +
                             "--sum_min_len 50");
 
