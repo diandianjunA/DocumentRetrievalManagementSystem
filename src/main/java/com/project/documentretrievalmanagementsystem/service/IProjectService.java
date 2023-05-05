@@ -25,3 +25,5 @@ public interface IProjectService extends IService<Project> {
     //选型分析，根据项目id获取与该项目相似度最高的五个项目信息以及相似度并返回
     public List<ProjectDto> projectAnalyze(Integer projectId) throws IOException;
 }
+
+
