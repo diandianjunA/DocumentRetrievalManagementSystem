@@ -61,7 +61,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             userDto.setPassword(password);
             userDto.setStatus(1);
             Map<String, Object> userMap = BeanUtil.beanToMap(userDto, new HashMap<>(),
-                    CopyOptions.create().setIgnoreNullValue(true).setFieldValueEditor((fieldName, fieldValue)->fieldValue.toString()));
+                    CopyOptions.create()
+                            .setIgnoreNullValue(true)
+                            //在setFieldValueEditor中也需要判空
+                            .setFieldValueEditor((fieldName,fieldValue) -> {
+                                if (fieldValue == null){
+                                    fieldValue = "0";
+                                }else {
+                                    fieldValue = fieldValue + "";
+                                }
+                                return fieldValue;
+                            }));
             //存储
             stringRedisTemplate.opsForHash().putAll(LOGIN_USER_KEY+token,userMap);
             //设置有效期
@@ -84,7 +94,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 userDto.setPassword(user.getPassword());
                 userDto.setStatus(user.getStatus());
                 Map<String, Object> userMap = BeanUtil.beanToMap(userDto, new HashMap<>(),
-                        CopyOptions.create().setIgnoreNullValue(true).setFieldValueEditor((fieldName, fieldValue)->fieldValue.toString()));
+                        CopyOptions.create()
+                                .setIgnoreNullValue(true)
+                                //在setFieldValueEditor中也需要判空
+                                .setFieldValueEditor((fieldName,fieldValue) -> {
+                                    if (fieldValue == null){
+                                        fieldValue = "0";
+                                    }else {
+                                        fieldValue = fieldValue + "";
+                                    }
+                                    return fieldValue;
+                                }));
                 //存储
                 stringRedisTemplate.opsForHash().putAll(LOGIN_USER_KEY+token,userMap);
                 //设置有效期

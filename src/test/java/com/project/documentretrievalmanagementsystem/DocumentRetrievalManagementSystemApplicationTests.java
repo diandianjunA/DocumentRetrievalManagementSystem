@@ -75,7 +75,7 @@ class DocumentRetrievalManagementSystemApplicationTests {
 
     @Test
     void generateSummary() throws Exception {
-        String summary = schemeService.generateSummary( 4);
+        String summary = schemeService.generateSummary( 10);
         System.out.println(summary);
     }
 
@@ -100,7 +100,7 @@ class DocumentRetrievalManagementSystemApplicationTests {
 
     @Test
     void similarity() throws Exception {
-        double similarity = projectService.similarity(1, 2);
+        double similarity = projectService.similarity(5, 6);
         System.out.println(similarity);
     }
 

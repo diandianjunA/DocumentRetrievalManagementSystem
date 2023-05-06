@@ -15,5 +15,6 @@ public class MaterialDto extends Material {
         this.setName(material.getName());
         this.setProjectId(material.getProjectId());
         this.setLocation(material.getLocation());
+        this.setVectorLocation(material.getVectorLocation());
     }
 }

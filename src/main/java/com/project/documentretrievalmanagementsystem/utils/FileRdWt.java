@@ -31,13 +31,26 @@ public class FileRdWt {
             return text;
         }
 
-
-    // 写入文件内容
-    public static void writeFile(String filePath, String content) throws IOException {
+        // 写入文件内容
+        public static void writeFile(String filePath, String content) throws IOException {
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filePath,true), "UTF-8"));
         bw.write(content);
         bw.close();
     }
 
+    public static StringBuffer readTxt(String path) throws IOException {
+        File file = new File(path);
+        FileReader fr = new FileReader(file);
+        BufferedReader br = new BufferedReader(fr);
+
+        String line;
+        StringBuffer sb = new StringBuffer();
+        while ((line = br.readLine()) != null) {
+            sb.append(line);
+        }
+
+        br.close();
+        return sb;
+    }
 }
 

@@ -40,7 +40,7 @@ public class TransTotxtS {
             fis.close();
 
             // 将内容写入txt文件
-            //String PATH = basePath+"similarity.txt";
+            //String PATH = basePath+"vector.txt";
             FileOutputStream fos = new FileOutputStream(basePath);
             fos.write(text.getBytes());
             fos.close();

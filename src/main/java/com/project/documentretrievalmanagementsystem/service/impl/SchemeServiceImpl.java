@@ -36,8 +36,9 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
     FileService fileService;
     @Autowired
     IMaterialService materialService;
-    @Value("${my.basePath}")
-    private String basePath;
+
+    @Value("${my.basePathT}")
+    private String basePathT;
     @Value("${my.modelPath}")
     private String modelPath;
     @Value("${my.pythonPath}")
@@ -53,9 +54,9 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
         //获取资料地址
         String location = material.getLocation();
         //将资料转换为txt格式
-        TransTotxt.DocxToTxt(location,basePath);
+        TransTotxt.DocxToTxt(location,basePathT);
         String result = "";
-        String Path = basePath+"scheme.txt";
+        String Path = basePathT+"scheme.txt";
         try {
             //开启了命令执行器，输入指令执行python脚本
             Process process = Runtime.getRuntime()
@@ -81,7 +82,6 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
     @Override
     //方案保存
     public Scheme saveScheme(String summary,String schemeName,Integer materialId) {
-        String Path = basePath + "scheme.txt";
         Material material = materialService.getById(materialId);
         //获取该material的数据库信息
         String name = material.getName();
@@ -93,7 +93,6 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
         scheme.setMaterialId(materialId);
         scheme.setUserId(userid);
         scheme.setProjectId(projectId);
-        scheme.setLocation(Path + "\\scheme.txt");
         scheme.setSummary(summary);
         save(scheme);
         return scheme;
@@ -101,7 +100,7 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
 
     @Override
     public XSSFWorkbook downloadExcel(List<Scheme> list) {
-        String[] excelHeader = { "Id", "方案名", "用户Id", "资料Id", "项目Id", "资料地址", "摘要"};
+        String[] excelHeader = { "Id", "方案名", "用户Id", "资料Id", "项目Id", "摘要"};
         XSSFWorkbook wb = new XSSFWorkbook();
         //创建XSSFSheet对象
         XSSFSheet sheet = wb.createSheet("关系表");
@@ -126,8 +125,7 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
             row.createCell(2).setCellValue(scheme.getUserId());
             row.createCell(3).setCellValue(scheme.getMaterialId());
             row.createCell(4).setCellValue(scheme.getProjectId());
-            row.createCell(5).setCellValue(scheme.getLocation());
-            row.createCell(6).setCellValue(scheme.getSummary());
+            row.createCell(5).setCellValue(scheme.getSummary());
         }
         return wb;
     }

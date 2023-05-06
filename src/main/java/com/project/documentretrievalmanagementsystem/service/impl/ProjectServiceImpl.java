@@ -37,15 +37,6 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
     @Lazy
     @Autowired
     IMaterialService materialService;
-    @Value("${my.basePath}")
-    private String basePath;
-    @Value("${my.modelPath}")
-    private String modelPath;
-    @Value("${my.pythonPath}")
-    private String pythonPath;
-    @Value("${my.scriptPath}")
-    private String scriptPath;
-
 
     @Override
     public Map<Integer, Project> getProjectMap() {
@@ -63,68 +54,41 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
         //获取项目A的所有资料
         List<Material> materialListA = materialService.list(wrapperA);
         List<Material> materialListB = materialService.list(wrapperB);
-        //将所有资料都分别放入一个txt文件中
-        combine(projectIdA, materialListA);
 
-        combine(projectIdB, materialListB);
-        //路径
-        String filePathA = basePath + projectIdA + ".txt";
-        String filePathB = basePath + projectIdB + ".txt";
-        String vecA = "";
-        String vecB = "";
-        //获取第一篇文章的向量
-        try {
-            //开启了命令执行器，输入指令执行python脚本
-            Process processA = Runtime.getRuntime()
-                    .exec(pythonPath+" " +
-                            scriptPath+"/predict.py " +
-                            "--model_path "+modelPath+" " +
-                            "--file_path " + filePathA + " " +
-                            "--sum_min_len 50 " +
-                            "--gen_vec 1");
-
-            //这种方式获取返回值的方式是需要用python打印输出，然后java去获取命令行的输出，在java返回
-            InputStreamReader ir = new InputStreamReader(processA.getInputStream(), "GB2312");
-            LineNumberReader input = new LineNumberReader(ir);
-            //读取命令行的输出
-            vecA = input.readLine();
-            input.close();
-            ir.close();
-        } catch (IOException e) {
-            System.out.println("调用python脚本并读取结果时出错：" + e.getMessage());
+        //读取项目A的所有资料的vector拼接成一个字符串
+        StringBuilder vecA = new StringBuilder(new StringBuffer());
+        for (Material material : materialListA) {
+            //获取资料的vector
+            String vectorLocation = material.getVectorLocation();
+            //读取vector文件
+            StringBuffer vector = FileRdWt.readTxt(vectorLocation);
+            //将vector拼接成一个字符串
+            vecA.append(vector).append(",");
         }
 
-        //获取第二篇文章的向量
-        try {
-            //开启了命令执行器，输入指令执行python脚本
-            Process processB = Runtime.getRuntime()
-                    .exec(pythonPath+" " +
-                            scriptPath+"/predict.py " +
-                            "--model_path "+modelPath+" " +
-                            "--file_path " + filePathB + " " +
-                            "--sum_min_len 50 " +
-                            "--gen_vec 1");
-
-            //这种方式获取返回值的方式是需要用python打印输出，然后java去获取命令行的输出，在java返回
-            InputStreamReader ir = new InputStreamReader(processB.getInputStream(), "GB2312");
-            LineNumberReader input = new LineNumberReader(ir);
-            //读取命令行的输出
-            vecB = input.readLine();
-            input.close();
-            ir.close();
-        } catch (IOException e) {
-            System.out.println("调用python脚本并读取结果时出错：" + e.getMessage());
+        //读取项目B的所有资料的vector拼接成一个字符串
+        StringBuilder vecB = new StringBuilder(new StringBuffer());
+        for (Material material : materialListB) {
+            //获取资料的vector
+            String vectorLocation = material.getVectorLocation();
+            //读取vector文件
+            StringBuffer vector = FileRdWt.readTxt(vectorLocation);
+            //将vector拼接成一个字符串
+            vecB.append(vector).append(",");
         }
+        //裁剪使得满足余弦相似度计算的格式
+        vecA = new StringBuilder(vecA.substring(0, vecA.length() - 1));
+        vecB = new StringBuilder(vecA.substring(0, vecA.length() - 1));
 
         //将字符串转换为double数组
-        String[] vecAstr = vecA.split(",");
-        String[] vecBstr = vecB.split(",");
+        String[] vecAstr = vecA.toString().split(",");
+        String[] vecBstr = vecB.toString().split(",");
         double[] vecAdouble = new double[vecAstr.length];
         double[] vecBdouble = new double[vecBstr.length];
-        for (int i = 1; i < vecAstr.length - 1; i++) {
+        for (int i = 0; i < vecAstr.length; i++) {
             vecAdouble[i] = Double.parseDouble(vecAstr[i]);
         }
-        for (int i = 1; i < vecBstr.length - 1; i++) {
+        for (int i = 0; i < vecBstr.length; i++) {
             vecBdouble[i] = Double.parseDouble(vecBstr[i]);
         }
         //计算两个向量的余弦相似度
@@ -133,17 +97,7 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
         //String similaritystr = TransTotxtS.doubleToPercent(similarity);
         //System.out.println(similaritystr);
         //返回相似度
-        return similarity;
-    }
-
-    private void combine(Integer projectId, List<Material> materialList) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        for (Material material : materialList) {
-            String content = FileRdWt.readFile(material.getLocation());
-            sb.append(content).append("\n");
-        }
-        String filePath = basePath + projectId + ".txt";
-        FileRdWt.writeFile(filePath, sb.toString());
+        return similarity < 1 ? similarity : 1;
     }
 
     @Override

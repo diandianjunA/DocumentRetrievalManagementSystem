@@ -8,6 +8,7 @@
         <result column="name" property="name" />
         <result column="project_id" property="projectId" />
         <result column="location" property="location" />
+        <result column="vector_location" property="vectorLocation" />
     </resultMap>
 
 </mapper>

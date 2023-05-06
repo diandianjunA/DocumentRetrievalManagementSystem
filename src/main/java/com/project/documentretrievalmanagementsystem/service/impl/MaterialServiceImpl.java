@@ -16,13 +16,15 @@ import com.project.documentretrievalmanagementsystem.service.FileService;
 import com.project.documentretrievalmanagementsystem.service.IMaterialService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.project.documentretrievalmanagementsystem.service.IProjectService;
+import com.project.documentretrievalmanagementsystem.utils.TransTotxt;
+import com.project.documentretrievalmanagementsystem.utils.TransTotxtS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -43,6 +45,14 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
     FileService fileService;
     @Value("${my.basePath}")
     private String basePath;
+    @Value("${my.basePathT}")
+    private String basePathT;
+    @Value("${my.pythonPath}")
+    private String pythonPath;
+    @Value("${my.modelPath}")
+    private String modelPath;
+    @Value("${my.scriptPath}")
+    private String scriptPath;
     @Autowired
     ElasticsearchClient elasticsearchClient;
 
@@ -52,6 +62,7 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
 
     @Override
     public Material addMaterial(String name, Integer projectId, MultipartFile file) {
+        //上传文件
         String originalName = fileService.upload(file, basePath);
         Material material = new Material();
         material.setName(name);
@@ -59,17 +70,67 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
         Integer currentId = UserHolder.getUser().getId();
         material.setUserId(Math.toIntExact(currentId));
         material.setLocation(basePath + originalName);
+        String Location = material.getLocation();
+        String LocationT = basePathT + material.getName() + ".txt";
+        String vecLocation = basePathT + material.getName() + "vector.txt";
+        material.setVectorLocation(vecLocation);
         save(material);     //保存到数据库
+
+        //将docx文件转换为txt文件
+        TransTotxtS.DocxToTxt(Location,LocationT);
+
+        //创建一个新线程来调用python脚本将用户上传的资料转换为向量
+        Thread processThread = new Thread(() -> {
+            // 处理上传的文件
+            // 执行python脚本的代码
+            try {
+                //开启了命令执行器，输入指令执行python脚本
+                Process process = Runtime.getRuntime()
+                        .exec(pythonPath+ " " +
+                                scriptPath+"/predict.py " +
+                                "--model_path "+modelPath+" " +
+                                "--file_path "+LocationT+" " +
+                                "--sum_min_len 50 " +
+                                "--gen_vec 1");
+
+                //这种方式获取返回值的方式是需要用python打印输出，然后java去获取命令行的输出，在java返回
+                InputStreamReader ir = new InputStreamReader(process.getInputStream(), "GB2312");
+                LineNumberReader input = new LineNumberReader(ir);
+                //读取命令行的输出
+                String vec = input.readLine();
+                //去掉输出的前后的中括号
+                String vector = vec.substring(1, vec.length() - 1);
+                //将向量写入到文件中
+                FileWriter fw = new FileWriter(vecLocation);
+                fw.write(vector);
+                fw.close();
+                input.close();
+                ir.close();
+            } catch (IOException e) {
+                System.out.println("调用python脚本并读取结果时出错：" + e.getMessage());
+            }
+
+        });
+        processThread.start();
+
         return material;
     }
 
     @Override
     public void deleteMaterial(Integer id) {
         Material material = getById(id);
+        //删除资料文件
         File file = new File(material.getLocation());
         if(file.exists()){
             file.delete();
         }
+        //删除资料所对应的向量文件
+        String vectorLocation = material.getVectorLocation();
+        File vectorFile = new File(vectorLocation);
+        if(vectorFile.exists()){
+            vectorFile.delete();
+        }
+        //删除数据库记录
         removeById(id);
     }
 

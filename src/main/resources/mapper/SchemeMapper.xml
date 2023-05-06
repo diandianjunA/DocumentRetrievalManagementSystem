@@ -8,7 +8,6 @@
         <result column="name" property="name" />
         <result column="project_id" property="projectId" />
         <result column="material_id" property="materialId" />
-        <result column="location" property="location" />
     </resultMap>
 
 </mapper>
