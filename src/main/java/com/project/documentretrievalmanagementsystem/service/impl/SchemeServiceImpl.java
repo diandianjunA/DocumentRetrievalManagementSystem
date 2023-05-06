@@ -15,6 +15,7 @@ import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -34,6 +35,7 @@ import java.util.List;
 public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> implements ISchemeService {
     @Autowired
     FileService fileService;
+    @Lazy
     @Autowired
     IMaterialService materialService;
 
@@ -80,25 +82,6 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
     }
 
     @Override
-    //方案保存
-    public Scheme saveScheme(String summary,String schemeName,Integer materialId) {
-        Material material = materialService.getById(materialId);
-        //获取该material的数据库信息
-        String name = material.getName();
-        Integer projectId = material.getProjectId();
-        Integer userid = material.getUserId();
-        //存入scheme数据库
-        Scheme scheme = new Scheme();
-        scheme.setName(schemeName);
-        scheme.setMaterialId(materialId);
-        scheme.setUserId(userid);
-        scheme.setProjectId(projectId);
-        scheme.setSummary(summary);
-        save(scheme);
-        return scheme;
-    }
-
-    @Override
     public XSSFWorkbook downloadExcel(List<Scheme> list) {
         String[] excelHeader = { "Id", "方案名", "用户Id", "资料Id", "项目Id", "摘要"};
         XSSFWorkbook wb = new XSSFWorkbook();
@@ -137,5 +120,11 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
         return list(wrapper);
     }
 
+    @Override
+    public void deleteByMaterialId(Integer MaterialId) {
+        LambdaQueryWrapper<Scheme> schemeLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        schemeLambdaQueryWrapper.eq(Scheme::getMaterialId,MaterialId);
+        remove(schemeLambdaQueryWrapper);
+    }
 }
 

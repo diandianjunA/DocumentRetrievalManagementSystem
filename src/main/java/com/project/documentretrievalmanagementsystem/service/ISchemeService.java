@@ -19,13 +19,12 @@ public interface ISchemeService extends IService<Scheme> {
     //调用python脚本生成资料摘要(方案生成)
     public String generateSummary(Integer materialId);
 
-    //方案保存
-    public Scheme saveScheme(String summary,String schemeName,Integer materialId);
-
     //数据库中scheme导出excel表格中(导出全部方案)
     XSSFWorkbook downloadExcel(List<Scheme> list);
 
     List<Scheme> getSchemeByMaterialId(Integer MaterialId);
+
+    void deleteByMaterialId(Integer MaterialId);
 
 }
 

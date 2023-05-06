@@ -76,9 +76,9 @@ public class MaterialController {
 
     @GetMapping("/getByProjectId")
     @ApiOperation("根据项目id获取资料")
-    public R<List<Material>> getMaterialByProjectsId(@ApiParam("项目id")Integer id){
+    public R<List<Material>> getMaterialByProjectsId(@ApiParam("项目id")Integer projectId){
         LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        materialLambdaQueryWrapper.eq(Material::getProjectId,id);
+        materialLambdaQueryWrapper.eq(Material::getProjectId,projectId);
         List<Material> list = materialService.list(materialLambdaQueryWrapper);
         return R.success(list);
     }
@@ -138,7 +138,7 @@ public class MaterialController {
 
     @PostMapping("/update")
     @ApiOperation("更新资料信息")
-    public R<Material> updateMaterial(@ApiParam("资料数据") Material material){
+    public R<Material> updateMaterial(@ApiParam("资料数据") @RequestBody Material material){
         if(materialService.updateById(material)){
             return R.success(material);
         }else{
@@ -150,29 +150,11 @@ public class MaterialController {
     @ResponseBody
     @ApiOperation("在删除数据库上资料的同时，删除服务器上的文件")
     public R deleteMaterial(@ApiParam("资料id") Integer id){
-        Material material = materialService.getById(id);
-        if(materialService.removeById(id)){
-            delete_vec_txt_file(material, basePathT);
+        try {
+            materialService.deleteById(id);
             return R.success("删除成功");
-        }else{
-            return R.error("删除失败");
-        }
-    }
-
-    public static void delete_vec_txt_file(Material material, String basePathT) {
-        File file = new File(material.getLocation());
-        if(file.exists()){
-            file.delete();
-        }
-        String txtLocation = basePathT + material.getName() + ".txt";
-        File txtFile = new File(txtLocation);
-        if(txtFile.exists()){
-            txtFile.delete();
-        }
-        String vectorLocation = material.getVectorLocation();
-        File vectorFile = new File(vectorLocation);
-        if(vectorFile.exists()){
-            vectorFile.delete();
+        } catch (Exception e) {
+            return R.success("删除失败");
         }
     }
 

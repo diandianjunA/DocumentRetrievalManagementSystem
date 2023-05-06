@@ -37,6 +37,8 @@ import static com.project.documentretrievalmanagementsystem.utils.RedisConstants
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private UserMapper userMapper;
     public User login(@RequestBody Map<String,String> map, HttpSession session){
         String userName = map.get("userName");
         String password = map.get("password");
@@ -112,5 +114,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 return userDto;
             }
         }
+    }
+
+    @Override
+    public Map<Integer, User> getUserMap() {
+        return userMapper.getUserMap();
     }
 }

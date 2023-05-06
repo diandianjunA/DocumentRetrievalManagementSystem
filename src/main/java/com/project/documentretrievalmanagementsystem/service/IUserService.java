@@ -17,4 +17,5 @@ import java.util.Map;
  */
 public interface IUserService extends IService<User> {
     User login(@RequestBody Map<String,String> map, HttpSession session);
+    Map<Integer,User> getUserMap();
 }

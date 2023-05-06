@@ -64,9 +64,9 @@ class DocumentRetrievalManagementSystemApplicationTests {
     @Test
     void fuzzyQuery() throws Exception {
         EsQueryDto esQueryDto = new EsQueryDto();
-        esQueryDto.setFrom(0);
+        esQueryDto.setFrom(2);
         esQueryDto.setSize(5);
-        esQueryDto.setWord("系统");
+        esQueryDto.setWord("");
         List<MaterialDto> materialDtos = materialService.fuzzyQuery(esQueryDto);
         for (MaterialDto materialDto : materialDtos) {
             System.out.println(materialDto);
@@ -79,11 +79,6 @@ class DocumentRetrievalManagementSystemApplicationTests {
         System.out.println(summary);
     }
 
-    @Test
-    void saveScheme() throws Exception {
-        Scheme scheme = schemeService.saveScheme("测试方案","测试方案",4);
-        System.out.println(scheme.toString());
-    }
 
     @Test
     void downloadScheme() throws Exception {
@@ -100,7 +95,7 @@ class DocumentRetrievalManagementSystemApplicationTests {
 
     @Test
     void similarity() throws Exception {
-        double similarity = projectService.similarity(5, 6);
+        double similarity = projectService.similarity(3, 4);
         System.out.println(similarity);
     }
 

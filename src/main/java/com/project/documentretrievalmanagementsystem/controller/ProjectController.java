@@ -113,7 +113,10 @@ public class ProjectController {
         boolean deleteProject = projectService.removeById(id);
         LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
         materialLambdaQueryWrapper.eq(Material::getProjectId,id);
-        materialService.remove(materialLambdaQueryWrapper);
+        List<Material> list = materialService.list(materialLambdaQueryWrapper);
+        for (Material material:list) {
+            materialService.deleteById(material.getId());
+        }
         if(deleteProject){
             return R.success(1);
         }else{

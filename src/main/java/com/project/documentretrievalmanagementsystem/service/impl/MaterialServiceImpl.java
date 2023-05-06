@@ -16,19 +16,19 @@ import com.project.documentretrievalmanagementsystem.service.FileService;
 import com.project.documentretrievalmanagementsystem.service.IMaterialService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.project.documentretrievalmanagementsystem.service.IProjectService;
+import com.project.documentretrievalmanagementsystem.service.ISchemeService;
 import com.project.documentretrievalmanagementsystem.utils.TransTotxt;
 import com.project.documentretrievalmanagementsystem.utils.TransTotxtS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * <p>
@@ -59,6 +59,12 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
     @Lazy
     @Autowired
     IProjectService projectService;
+
+    @Autowired
+    MaterialMapper materialMapper;
+
+    @Autowired
+    ISchemeService schemeService;
 
     @Override
     public Material addMaterial(String name, Integer projectId, MultipartFile file) {
@@ -165,26 +171,79 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
     }
 
     @Override
+    public Map<Integer, Material> getMaterialMap() {
+        return materialMapper.getMaterialMap();
+    }
+
+    @Override
+    public void delete_vec_txt_file(Material material, String basePathT) {
+        File file = new File(material.getLocation());
+        if(file.exists()){
+            file.delete();
+        }
+        String txtLocation = basePathT + material.getName() + ".txt";
+        File txtFile = new File(txtLocation);
+        if(txtFile.exists()){
+            txtFile.delete();
+        }
+        String vectorLocation = material.getVectorLocation();
+        File vectorFile = new File(vectorLocation);
+        if(vectorFile.exists()){
+            vectorFile.delete();
+        }
+    }
+
+    @Override
+    public void deleteElasticsearchDoc(Material material) throws IOException {
+        EsQueryDto esQueryDto = new EsQueryDto();
+        esQueryDto.setIndex("resumes");
+        esQueryDto.setField("content");
+        SearchResponse<HashMap> search= elasticsearchClient.search(s -> s.index(esQueryDto.getIndex()), HashMap.class);
+        List<Hit<HashMap>> hits = search.hits().hits();
+        for (Hit<HashMap> hit:hits){
+            HashMap source = hit.source();
+            HashMap file = (HashMap) source.get("file");
+            String location = (String) file.get("url");
+            location=location.substring(7);
+            if(Objects.equals(material.getLocation(), location)){
+                elasticsearchClient.delete(d->d.index(esQueryDto.getIndex()).id(hit.id()));
+                break;
+            }
+        }
+    }
+
+    @Override
+    public void deleteById(Integer id) {
+        Material material = getById(id);
+        delete_vec_txt_file(material,basePathT);
+        try {
+            deleteElasticsearchDoc(material);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        removeById(id);
+        schemeService.deleteByMaterialId(id);
+    }
+
+    @Override
     public List<MaterialDto> fuzzyQuery(EsQueryDto esQueryDto) throws Exception {
         esQueryDto.setIndex("resumes");
         esQueryDto.setField("content");
-        SearchResponse<HashMap> search = elasticsearchClient.search(s -> s
-                        .index(esQueryDto.getIndex())
-                        .query(q -> q.fuzzy(t -> t
-                                .field(esQueryDto.getField())
-                                .value(esQueryDto.getWord()).fuzziness("1")
-                        )).from(esQueryDto.getFrom()).size(esQueryDto.getSize()),
-                HashMap.class);
+        SearchResponse<HashMap> search;
+        if(!Objects.equals(esQueryDto.getWord(), "")){
+            search = elasticsearchClient.search(s -> s
+                    .index(esQueryDto.getIndex())
+                    .query(q -> q.match(t->t.field(esQueryDto.getField()).query(esQueryDto.getWord()))), HashMap.class);
+        }else{
+            search = elasticsearchClient.search(s -> s
+                    .index(esQueryDto.getIndex()), HashMap.class);
+        }
         List<Hit<HashMap>> hits = search.hits().hits();
         ArrayList<MaterialDto> res = new ArrayList<>();
         for (Hit<HashMap> hit:hits){
             HashMap source = hit.source();
             HashMap file = (HashMap) source.get("file");
             String location = (String) file.get("url");
-            String suffix = location.substring(location.lastIndexOf('.') + 1);
-            if(!suffix.equals("docx")){
-                continue;
-            }
             location=location.substring(7);
             LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
             materialLambdaQueryWrapper.eq(Material::getLocation,location);

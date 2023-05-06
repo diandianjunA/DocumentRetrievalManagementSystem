@@ -54,7 +54,9 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
         //获取项目A的所有资料
         List<Material> materialListA = materialService.list(wrapperA);
         List<Material> materialListB = materialService.list(wrapperB);
-
+        if(materialListA.isEmpty()||materialListB.isEmpty()){
+            return 0;
+        }
         //读取项目A的所有资料的vector拼接成一个字符串
         StringBuilder vecA = new StringBuilder(new StringBuffer());
         for (Material material : materialListA) {
@@ -78,7 +80,7 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
         }
         //裁剪使得满足余弦相似度计算的格式
         vecA = new StringBuilder(vecA.substring(0, vecA.length() - 1));
-        vecB = new StringBuilder(vecB.substring(0, vecA.length() - 1));
+        vecB = new StringBuilder(vecB.substring(0, vecB.length() - 1));
 
         //将字符串转换为double数组
         String[] vecAstr = vecA.toString().split(",");
@@ -110,7 +112,7 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
         //遍历项目map，计算相似度，将相似度最高的五个项目放入list中
         List<ProjectDto> projectDtoList = new ArrayList<>();
         for (Map.Entry<Integer, Project> entry : projectMap.entrySet()) {
-            if (entry.getKey() != projectId) {
+            if (!Objects.equals(entry.getKey(), projectId)) {
                 //获取项目id为entry.getKey()的项目
                 Project projectT = projectMap.get(entry.getKey());
                 ProjectDto projectDto = new ProjectDto();
