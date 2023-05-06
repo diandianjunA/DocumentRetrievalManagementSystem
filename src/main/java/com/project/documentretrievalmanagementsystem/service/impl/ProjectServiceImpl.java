@@ -61,9 +61,9 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
             //获取资料的vector
             String vectorLocation = material.getVectorLocation();
             //读取vector文件
-            StringBuffer vector = FileRdWt.readTxt(vectorLocation);
+            StringBuffer vectorA = FileRdWt.readTxt(vectorLocation);
             //将vector拼接成一个字符串
-            vecA.append(vector).append(",");
+            vecA.append(vectorA).append(",");
         }
 
         //读取项目B的所有资料的vector拼接成一个字符串
@@ -72,13 +72,13 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
             //获取资料的vector
             String vectorLocation = material.getVectorLocation();
             //读取vector文件
-            StringBuffer vector = FileRdWt.readTxt(vectorLocation);
+            StringBuffer vectorB = FileRdWt.readTxt(vectorLocation);
             //将vector拼接成一个字符串
-            vecB.append(vector).append(",");
+            vecB.append(vectorB).append(",");
         }
         //裁剪使得满足余弦相似度计算的格式
         vecA = new StringBuilder(vecA.substring(0, vecA.length() - 1));
-        vecB = new StringBuilder(vecA.substring(0, vecA.length() - 1));
+        vecB = new StringBuilder(vecB.substring(0, vecA.length() - 1));
 
         //将字符串转换为double数组
         String[] vecAstr = vecA.toString().split(",");
