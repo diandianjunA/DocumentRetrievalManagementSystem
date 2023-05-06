@@ -17,6 +17,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,6 +47,8 @@ public class MaterialController {
     IProjectService projectService;
     @Autowired
     FileService fileService;
+    @Value("${my.basePathT}")
+    private String basePathT;
 
     @PostMapping("/add")
     @ApiOperation("添加资料")
@@ -149,13 +152,27 @@ public class MaterialController {
     public R deleteMaterial(@ApiParam("资料id") Integer id){
         Material material = materialService.getById(id);
         if(materialService.removeById(id)){
-            File file = new File(material.getLocation());
-            if(file.exists()){
-                file.delete();
-            }
+            delete_vec_txt_file(material, basePathT);
             return R.success("删除成功");
         }else{
             return R.error("删除失败");
+        }
+    }
+
+    public static void delete_vec_txt_file(Material material, String basePathT) {
+        File file = new File(material.getLocation());
+        if(file.exists()){
+            file.delete();
+        }
+        String txtLocation = basePathT + material.getName() + ".txt";
+        File txtFile = new File(txtLocation);
+        if(txtFile.exists()){
+            txtFile.delete();
+        }
+        String vectorLocation = material.getVectorLocation();
+        File vectorFile = new File(vectorLocation);
+        if(vectorFile.exists()){
+            vectorFile.delete();
         }
     }
 
