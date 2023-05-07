@@ -1,7 +1,11 @@
 package com.project.documentretrievalmanagementsystem.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.project.documentretrievalmanagementsystem.common.UserHolder;
+import com.project.documentretrievalmanagementsystem.dto.MaterialSimilarityDto;
 import com.project.documentretrievalmanagementsystem.dto.ProjectDto;
+import com.project.documentretrievalmanagementsystem.dto.SimilarityDto;
 import com.project.documentretrievalmanagementsystem.entity.Material;
 import com.project.documentretrievalmanagementsystem.entity.Project;
 import com.project.documentretrievalmanagementsystem.mapper.ProjectMapper;
@@ -49,52 +53,43 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
         //查询资料数据库，获取项目id为projectIdA的资料
         QueryWrapper<Material> wrapperA = new QueryWrapper<>();
         QueryWrapper<Material> wrapperB = new QueryWrapper<>();
+        Integer id = UserHolder.getUser().getId();
         wrapperA.eq("project_id", projectIdA);
+        wrapperA.eq("user_id", id);
         wrapperB.eq("project_id", projectIdB);
+        wrapperB.eq("user_id", id);
         //获取项目A的所有资料
         List<Material> materialListA = materialService.list(wrapperA);
         List<Material> materialListB = materialService.list(wrapperB);
         if(materialListA.isEmpty()||materialListB.isEmpty()){
             return 0;
         }
-        //读取项目A的所有资料的vector拼接成一个字符串
-        StringBuilder vecA = new StringBuilder(new StringBuffer());
+        double[] vecA = new double[768];
         for (Material material : materialListA) {
             //获取资料的vector
             String vectorLocation = material.getVectorLocation();
             //读取vector文件
             StringBuffer vectorA = FileRdWt.readTxt(vectorLocation);
-            //将vector拼接成一个字符串
-            vecA.append(vectorA).append(",");
+            String[] temp = vectorA.toString().split(",");
+            for (int i = 0; i < temp.length; i++) {
+                vecA[i] += Double.parseDouble(temp[i]);
+            }
         }
 
         //读取项目B的所有资料的vector拼接成一个字符串
-        StringBuilder vecB = new StringBuilder(new StringBuffer());
+        double[] vecB = new double[768];
         for (Material material : materialListB) {
             //获取资料的vector
             String vectorLocation = material.getVectorLocation();
             //读取vector文件
             StringBuffer vectorB = FileRdWt.readTxt(vectorLocation);
-            //将vector拼接成一个字符串
-            vecB.append(vectorB).append(",");
-        }
-        //裁剪使得满足余弦相似度计算的格式
-        vecA = new StringBuilder(vecA.substring(0, vecA.length() - 1));
-        vecB = new StringBuilder(vecB.substring(0, vecB.length() - 1));
-
-        //将字符串转换为double数组
-        String[] vecAstr = vecA.toString().split(",");
-        String[] vecBstr = vecB.toString().split(",");
-        double[] vecAdouble = new double[vecAstr.length];
-        double[] vecBdouble = new double[vecBstr.length];
-        for (int i = 0; i < vecAstr.length; i++) {
-            vecAdouble[i] = Double.parseDouble(vecAstr[i]);
-        }
-        for (int i = 0; i < vecBstr.length; i++) {
-            vecBdouble[i] = Double.parseDouble(vecBstr[i]);
+            String[] temp = vectorB.toString().split(",");
+            for (int i = 0; i < temp.length; i++) {
+                vecB[i] += Double.parseDouble(temp[i]);
+            }
         }
         //计算两个向量的余弦相似度
-        double similarity = TransTotxtS.cosineSimilarity(vecAdouble, vecBdouble);
+        double similarity = TransTotxtS.cosineSimilarity(vecA, vecB);
         //将小数转换为百分数
         //String similaritystr = TransTotxtS.doubleToPercent(similarity);
         //System.out.println(similaritystr);
@@ -107,11 +102,15 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
     public List<ProjectDto> projectAnalyze(Integer projectId) throws IOException {
         //获取项目map
         Map<Integer, Project> projectMap = projectMapper.getProjectMap();
+        Integer id = UserHolder.getUser().getId();
         //获取项目id为projectId的项目
         Project project = projectMap.get(projectId);
         //遍历项目map，计算相似度，将相似度最高的五个项目放入list中
         List<ProjectDto> projectDtoList = new ArrayList<>();
         for (Map.Entry<Integer, Project> entry : projectMap.entrySet()) {
+            if(!Objects.equals(entry.getValue().getUserId(), id)){
+                continue;
+            }
             if (!Objects.equals(entry.getKey(), projectId)) {
                 //获取项目id为entry.getKey()的项目
                 Project projectT = projectMap.get(entry.getKey());
@@ -152,5 +151,83 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
             //切片方法
             return projectDtoList.subList(0, 5);
         }
+    }
+
+    @Override
+    public SimilarityDto similarityAnalyze(Integer project1Id, Integer project2Id) throws IOException {
+        SimilarityDto similarityDto = new SimilarityDto();
+        ArrayList<MaterialSimilarityDto> materialSimilarityDtos1 = new ArrayList<>();
+        ArrayList<MaterialSimilarityDto> materialSimilarityDtos2 = new ArrayList<>();
+        LambdaQueryWrapper<Material> materialLambdaQueryWrapper1 = new LambdaQueryWrapper<>();
+        materialLambdaQueryWrapper1.eq(Material::getProjectId, project1Id);
+        List<Material> materials1 = materialService.list(materialLambdaQueryWrapper1);
+        LambdaQueryWrapper<Material> materialLambdaQueryWrapper2 = new LambdaQueryWrapper<>();
+        materialLambdaQueryWrapper2.eq(Material::getProjectId, project2Id);
+        List<Material> materials2 = materialService.list(materialLambdaQueryWrapper2);
+        double[] vecA = new double[768];
+        for (Material material : materials1) {
+            //获取资料的vector
+            String vectorLocation = material.getVectorLocation();
+            //读取vector文件
+            StringBuffer vectorA = FileRdWt.readTxt(vectorLocation);
+            String[] temp = vectorA.toString().split(",");
+            for (int i = 0; i < temp.length; i++) {
+                vecA[i] += Double.parseDouble(temp[i]);
+            }
+        }
+        double[] vecB = new double[768];
+        for (Material material : materials2) {
+            //获取资料的vector
+            String vectorLocation = material.getVectorLocation();
+            //读取vector文件
+            StringBuffer vectorB = FileRdWt.readTxt(vectorLocation);
+            String[] temp = vectorB.toString().split(",");
+            for (int i = 0; i < temp.length; i++) {
+                vecB[i] += Double.parseDouble(temp[i]);
+            }
+        }
+        for (Material material:materials1){
+            MaterialSimilarityDto materialSimilarityDto = new MaterialSimilarityDto();
+            materialSimilarityDto.setId(material.getId());
+            materialSimilarityDto.setName(material.getName());
+            materialSimilarityDto.setUserId(material.getUserId());
+            materialSimilarityDto.setLocation(material.getLocation());
+            materialSimilarityDto.setProjectId(material.getProjectId());
+            materialSimilarityDto.setVectorLocation(material.getVectorLocation());
+            String vecLoc = material.getVectorLocation();
+            StringBuffer vector = FileRdWt.readTxt(vecLoc);
+            String[] temp = vector.toString().split(",");
+            double[] vectorDouble = new double[temp.length];
+            for (int i = 0; i < temp.length; i++) {
+                vectorDouble[i] = Double.parseDouble(temp[i]);
+            }
+            double similarity = TransTotxtS.cosineSimilarity(vectorDouble, vecB);
+            materialSimilarityDto.setSimilarity(similarity < 1 ? similarity : 1);
+            materialSimilarityDtos1.add(materialSimilarityDto);
+        }
+        for (Material material:materials2){
+            MaterialSimilarityDto materialSimilarityDto = new MaterialSimilarityDto();
+            materialSimilarityDto.setId(material.getId());
+            materialSimilarityDto.setName(material.getName());
+            materialSimilarityDto.setUserId(material.getUserId());
+            materialSimilarityDto.setLocation(material.getLocation());
+            materialSimilarityDto.setProjectId(material.getProjectId());
+            materialSimilarityDto.setVectorLocation(material.getVectorLocation());
+            String vecLoc = material.getVectorLocation();
+            StringBuffer vector = FileRdWt.readTxt(vecLoc);
+            String[] temp = vector.toString().split(",");
+            double[] vectorDouble = new double[temp.length];
+            for (int i = 0; i < temp.length; i++) {
+                vectorDouble[i] = Double.parseDouble(temp[i]);
+            }
+            double similarity = TransTotxtS.cosineSimilarity(vectorDouble, vecA);
+            materialSimilarityDto.setSimilarity(similarity < 1 ? similarity : 1);
+            materialSimilarityDtos2.add(materialSimilarityDto);
+        }
+        double similarity = TransTotxtS.cosineSimilarity(vecA, vecB);
+        similarityDto.setSimilarity(similarity < 1 ? similarity : 1);
+        similarityDto.setList1(materialSimilarityDtos1);
+        similarityDto.setList2(materialSimilarityDtos2);
+        return similarityDto;
     }
 }

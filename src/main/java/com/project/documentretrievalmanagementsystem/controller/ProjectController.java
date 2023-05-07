@@ -7,6 +7,7 @@ import com.github.pagehelper.PageInfo;
 import com.project.documentretrievalmanagementsystem.common.R;
 import com.project.documentretrievalmanagementsystem.common.UserHolder;
 import com.project.documentretrievalmanagementsystem.dto.ProjectDto;
+import com.project.documentretrievalmanagementsystem.dto.SimilarityDto;
 import com.project.documentretrievalmanagementsystem.entity.Material;
 import com.project.documentretrievalmanagementsystem.entity.Project;
 import com.project.documentretrievalmanagementsystem.service.IMaterialService;
@@ -127,7 +128,7 @@ public class ProjectController {
     @GetMapping("/similarity")
     @ApiOperation("项目相似度")
     public R<Double> similarity(@ApiParam("项目Aid") Integer projectIdA, @ApiParam("项目Bid") Integer projectIdB) throws IOException {
-            double similarity = projectService.similarity(projectIdA, projectIdB);
+        double similarity = projectService.similarity(projectIdA, projectIdB);
         return R.success(similarity);
     }
 
@@ -135,6 +136,13 @@ public class ProjectController {
     @ApiOperation("项目分析")
     public R<List<ProjectDto>> analyze(@ApiParam("项目id") Integer projectId) throws IOException {
         List<ProjectDto> analysis = projectService.projectAnalyze(projectId);
+        return R.success(analysis);
+    }
+
+    @GetMapping("/similarityAnalyze")
+    @ApiOperation("项目相似度分析")
+    public R<SimilarityDto> similarityAnalyze(@ApiParam("项目一的id") Integer project1Id, @ApiParam("项目二的id") Integer project2Id) throws IOException {
+        SimilarityDto analysis = projectService.similarityAnalyze(project1Id,project2Id);
         return R.success(analysis);
     }
 }

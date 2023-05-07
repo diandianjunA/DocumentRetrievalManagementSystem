@@ -19,6 +19,6 @@ import java.util.Map;
 @Mapper
 public interface ProjectMapper extends BaseMapper<Project> {
     @MapKey("id")
-    @Select("select id,name from project")
+    @Select("select id,name,user_id from project")
     Map<Integer,Project> getProjectMap();
 }

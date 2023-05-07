@@ -17,6 +17,7 @@ import com.project.documentretrievalmanagementsystem.service.IMaterialService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.project.documentretrievalmanagementsystem.service.IProjectService;
 import com.project.documentretrievalmanagementsystem.service.ISchemeService;
+import com.project.documentretrievalmanagementsystem.utils.FileRdWt;
 import com.project.documentretrievalmanagementsystem.utils.TransTotxt;
 import com.project.documentretrievalmanagementsystem.utils.TransTotxtS;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -223,6 +224,29 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
         }
         removeById(id);
         schemeService.deleteByMaterialId(id);
+    }
+
+    @Override
+    public double similarity(Integer materialIdA, Integer materialIdB) throws IOException {
+        Material material1 = getById(materialIdA);
+        Material material2 = getById(materialIdB);
+        String vec1Loc = material1.getVectorLocation();
+        StringBuffer vectorA = FileRdWt.readTxt(vec1Loc);
+        String[] temp1 = vectorA.toString().split(",");
+        double[] vector1 = new double[temp1.length];
+        for (int i = 0; i < temp1.length; i++) {
+            vector1[i] = Double.parseDouble(temp1[i]);
+        }
+        String vec2Loc = material2.getVectorLocation();
+        StringBuffer vectorB = FileRdWt.readTxt(vec2Loc);
+        String[] temp2 = vectorB.toString().split(",");
+        double[] vector2 = new double[temp2.length];
+        for (int i = 0; i < temp2.length; i++) {
+            vector2[i] = Double.parseDouble(temp2[i]);
+        }
+        double similarity = TransTotxtS.cosineSimilarity(vector1, vector2);
+        //返回相似度
+        return similarity < 1 ? similarity : 1;
     }
 
     @Override

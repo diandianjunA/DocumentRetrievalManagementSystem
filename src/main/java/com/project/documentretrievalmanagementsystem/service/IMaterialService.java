@@ -39,4 +39,6 @@ public interface IMaterialService extends IService<Material> {
     void deleteElasticsearchDoc(Material material) throws IOException;
 
     void deleteById(Integer id);
+
+    double similarity(Integer materialIdA, Integer materialIdB) throws IOException;
 }

@@ -1,6 +1,7 @@
 package com.project.documentretrievalmanagementsystem.service;
 
 import com.project.documentretrievalmanagementsystem.dto.ProjectDto;
+import com.project.documentretrievalmanagementsystem.dto.SimilarityDto;
 import com.project.documentretrievalmanagementsystem.entity.Project;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -24,6 +25,8 @@ public interface IProjectService extends IService<Project> {
 
     //选型分析，根据项目id获取与该项目相似度最高的五个项目信息以及相似度并返回
     public List<ProjectDto> projectAnalyze(Integer projectId) throws IOException;
+
+    SimilarityDto similarityAnalyze(Integer project1Id, Integer project2Id) throws IOException;
 }
 
 

@@ -140,4 +140,11 @@ public class SchemeController {
         }
         return R.success(new PageInfo<>(schemeDtos,navSize));
     }
+
+    @GetMapping("/delete")
+    @ApiOperation("删除方案")
+    public R<String> deleteScheme(@ApiParam("方案id") Integer id){
+        schemeService.removeById(id);
+        return R.success("删除成功");
+    }
 }
