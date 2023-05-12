@@ -2,7 +2,6 @@ package com.project.documentretrievalmanagementsystem.service;
 
 import com.project.documentretrievalmanagementsystem.entity.Scheme;
 import com.baomidou.mybatisplus.extension.service.IService;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.util.List;
@@ -17,7 +16,7 @@ import java.util.List;
  */
 public interface ISchemeService extends IService<Scheme> {
     //调用python脚本生成资料摘要(方案生成)
-    public String generateSummary(Integer materialId);
+    public String generateSummary(Integer materialId, Integer length);
 
     //数据库中scheme导出excel表格中(导出全部方案)
     XSSFWorkbook downloadExcel(List<Scheme> list);

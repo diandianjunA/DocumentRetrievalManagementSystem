@@ -58,7 +58,7 @@ import org.springframework.web.multipart.MultipartFile;
 @ExtendWith(MockitoExtension.class)
 
 public class MaterialServiceTest {
-    @Value("${my.basePath}")
+    @Value("${my.basePathT}")
     private String mybasePath;
 
     @InjectMocks
@@ -111,9 +111,9 @@ public class MaterialServiceTest {
         int pageNum = 1;
         int pageSize = 10;
         int navSize = 5;
-        String materialName = "资料";
-        Integer projectId = 1000;
-        String projectName = "项目1";
+        String materialName = "Linux系统简介";
+        Integer projectId = 1;
+        String projectName = "Linux操作系统";
         // UserHolder userHolder = Mockito.mock(UserHolder.class);
         // MockedStatic<UserHolder> userHolder = Mockito.mockStatic(UserHolder.class);
 

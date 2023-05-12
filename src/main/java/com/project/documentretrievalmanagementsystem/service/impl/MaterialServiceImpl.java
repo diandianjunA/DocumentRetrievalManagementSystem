@@ -97,7 +97,7 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
                                 scriptPath+"/predict.py " +
                                 "--model_path "+modelPath+" " +
                                 "--file_path "+LocationT+" " +
-                                "--sum_min_len 50 " +
+                                "--sum_min_len 12 " +
                                 "--gen_vec 1");
 
                 //这种方式获取返回值的方式是需要用python打印输出，然后java去获取命令行的输出，在java返回

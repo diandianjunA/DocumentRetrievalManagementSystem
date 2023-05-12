@@ -8,10 +8,6 @@ import com.project.documentretrievalmanagementsystem.service.IMaterialService;
 import com.project.documentretrievalmanagementsystem.service.ISchemeService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.project.documentretrievalmanagementsystem.utils.TransTotxt;
-import com.project.documentretrievalmanagementsystem.utils.TransTotxtS;
-import io.swagger.models.auth.In;
-import org.apache.poi.xssf.usermodel.*;
-import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -51,7 +47,7 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
     @Override
     //调用python脚本生成资料摘要
     //方案生成
-    public String generateSummary(Integer materialId) {
+    public String generateSummary(Integer materialId, Integer length) {
         Material material = materialService.getById(materialId);
         //获取资料地址
         String location = material.getLocation();
@@ -66,7 +62,7 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
                             scriptPath+"/predict.py " +
                             "--model_path "+modelPath+" " +
                             "--file_path "+Path+" " +
-                            "--sum_min_len 50");
+                            "--sum_min_len "+length);
 
             //这种方式获取返回值的方式是需要用python打印输出，然后java去获取命令行的输出，在java返回
             InputStreamReader ir = new InputStreamReader(process.getInputStream(),"GB2312");

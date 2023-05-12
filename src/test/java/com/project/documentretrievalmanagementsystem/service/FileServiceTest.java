@@ -53,7 +53,7 @@ public class FileServiceTest {
     @Autowired
     private FileServiceImpl fileService;
 
-    @Value("${my.basePath}")
+    @Value("${my.basePathT}")
     private String mybasePath;
 
     @Mock
@@ -135,7 +135,7 @@ public class FileServiceTest {
         //返回一个输出流
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
 
-        String location = "D:\\code\\source\\material\\test2.txt";
+        String location = "D:\\code\\source\\TXT\\test2.txt";
         File file = new File(location);
         FileInputStream fileInputStream = new FileInputStream(file);
         byte[] fileContent = new byte[(int) file.length()];

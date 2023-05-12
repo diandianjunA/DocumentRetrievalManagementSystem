@@ -60,8 +60,8 @@ public class SchemeController {
     //方案生成
     @GetMapping("/generate")
     @ApiOperation("生成方案")
-    public R<String> generateSummary(@RequestParam("materialId") Integer materialId){
-        String result = schemeService.generateSummary(materialId);
+    public R<String> generateSummary(@RequestParam("materialId") Integer materialId,Integer length){
+        String result = schemeService.generateSummary(materialId,length);
         result=result.substring(2,result.length()-2).replace(" ","");
         return R.success(result);
     }
@@ -98,7 +98,7 @@ public class SchemeController {
 
     @GetMapping("/getPaged")
     @ApiOperation("获取方案分页数据")
-    public R<PageInfo<Scheme>> getPaged(@ApiParam("第几页")Integer pageNum, @ApiParam("一页多少条数据")int pageSize, @ApiParam("导航栏共展示几页")int navSize,@ApiParam("方案名称") String schemeName, @ApiParam("资料名称")String materialName,@ApiParam("资料id") String materialId, @ApiParam("资料对应的项目id") Integer projectId, @ApiParam("项目名称")String projectName){
+    public R<PageInfo<Scheme>> getPaged(@ApiParam("第几页")Integer pageNum, @ApiParam("一页多少条数据")int pageSize, @ApiParam("导航栏共展示几页")int navSize,@ApiParam("方案名称") String schemeName, @ApiParam("资料名称")String materialName,@ApiParam("资料id") Integer materialId, @ApiParam("资料对应的项目id") Integer projectId, @ApiParam("项目名称")String projectName){
         PageHelper.startPage(pageNum,pageSize);
         Integer currentId = UserHolder.getUser().getId();
         LambdaQueryWrapper<Scheme> schemeLambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -146,5 +146,12 @@ public class SchemeController {
     public R<String> deleteScheme(@ApiParam("方案id") Integer id){
         schemeService.removeById(id);
         return R.success("删除成功");
+    }
+
+    @PostMapping("/update")
+    @ApiOperation("更新方案")
+    public R<String> updateScheme(@RequestBody Scheme scheme){
+        schemeService.updateById(scheme);
+        return R.success("更新成功");
     }
 }

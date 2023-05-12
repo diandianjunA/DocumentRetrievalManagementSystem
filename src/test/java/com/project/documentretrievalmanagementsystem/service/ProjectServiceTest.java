@@ -61,7 +61,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class ProjectServiceTest {
     @Autowired
     ProjectMapper projectMapper;
-    @Value("${my.basePath}")
+    @Value("${my.basePathT}")
     private String mybasePath;
     @Autowired
     ProjectServiceImpl projectService;
@@ -190,7 +190,7 @@ public class ProjectServiceTest {
     @Test
     public void projectAnalyzeTest() {
         // 获取项目map
-        Integer projectId = 1000;
+        Integer projectId = 1;
         Map<Integer, Project> projectMap = projectMapper.getProjectMap();
         // 获取项目id为projectId的项目
         Project project = projectMap.get(projectId);

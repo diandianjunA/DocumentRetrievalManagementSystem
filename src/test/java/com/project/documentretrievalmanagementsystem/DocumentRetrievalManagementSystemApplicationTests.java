@@ -4,14 +4,10 @@ import com.github.pagehelper.PageInfo;
 import com.project.documentretrievalmanagementsystem.dto.EsQueryDto;
 import com.project.documentretrievalmanagementsystem.dto.MaterialDto;
 import com.project.documentretrievalmanagementsystem.dto.ProjectDto;
-import com.project.documentretrievalmanagementsystem.entity.Material;
-import com.project.documentretrievalmanagementsystem.entity.Scheme;
-import com.project.documentretrievalmanagementsystem.entity.User;
 import com.project.documentretrievalmanagementsystem.mapper.UserMapper;
 import com.project.documentretrievalmanagementsystem.service.IMaterialService;
 import com.project.documentretrievalmanagementsystem.service.ISchemeService;
 import com.project.documentretrievalmanagementsystem.service.impl.ProjectServiceImpl;
-import com.project.documentretrievalmanagementsystem.service.impl.SchemeServiceImpl;
 import io.github.swagger2markup.Swagger2MarkupConfig;
 import io.github.swagger2markup.Swagger2MarkupConverter;
 import io.github.swagger2markup.builder.Swagger2MarkupConfigBuilder;
@@ -21,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -75,7 +70,7 @@ class DocumentRetrievalManagementSystemApplicationTests {
 
     @Test
     void generateSummary() throws Exception {
-        String summary = schemeService.generateSummary( 10);
+        String summary = schemeService.generateSummary( 10, 50);
         System.out.println(summary);
     }
 

@@ -15,6 +15,7 @@ public class SchemeDto extends Scheme {
         this.setId(scheme.getId());
         this.setName(scheme.getName());
         this.setProjectId(scheme.getProjectId());
+        this.setMaterialId(scheme.getMaterialId());
         this.setUserId(scheme.getUserId());
         this.setSummary(scheme.getSummary());
     }

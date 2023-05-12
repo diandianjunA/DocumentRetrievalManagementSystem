@@ -23,3 +23,7 @@ spring:
 
 my:
   basePath: /usr/local/java/JavaProject/DocumentRetrievalManagementSystem/material/
+  basePathT: /usr/local/java/JavaProject/DocumentRetrievalManagementSystem/TXT/
+  modelPath: D:/code/source/document_retrieval_management_system/cpt-version/cpt-base
+  pythonPath: D:/anaconda/envs/document/python.exe
+  scriptPath: D:/code/source/document_retrieval_management_system/cpt-version
