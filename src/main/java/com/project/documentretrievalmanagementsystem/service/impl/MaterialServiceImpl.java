@@ -66,6 +66,7 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
     @Autowired
     ISchemeService schemeService;
 
+    //修改可以上传同名资料和相同文件
     @Override
     public Material addMaterial(String name, Integer projectId, MultipartFile file) throws SameMaterialNameException, SameFileException{
         //判断该文件是否已经存在，不允许上传同名文件
