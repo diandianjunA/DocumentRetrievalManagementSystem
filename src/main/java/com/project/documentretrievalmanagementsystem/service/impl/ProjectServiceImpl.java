@@ -42,6 +42,7 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
     @Autowired
     IMaterialService materialService;
 
+    //使用MyBatis框架，将获取到的项目列表封装成Map对象并返回
     @Override
     public Map<Integer, Project> getProjectMap() {
         return projectMapper.getProjectMap();
@@ -50,7 +51,7 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
 
     @Override
     public double similarity(Integer projectIdA, Integer projectIdB) throws IOException {
-        //查询资料数据库，获取项目id为projectIdA的资料
+        //使用MyBatis-Plus提供的条件构造器查询资料数据库，获取项目id为projectIdA的资料
         QueryWrapper<Material> wrapperA = new QueryWrapper<>();
         QueryWrapper<Material> wrapperB = new QueryWrapper<>();
         Integer id = UserHolder.getUser().getId();
@@ -108,6 +109,7 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
         //遍历项目map，计算相似度，将相似度最高的五个项目放入list中
         List<ProjectDto> projectDtoList = new ArrayList<>();
         for (Map.Entry<Integer, Project> entry : projectMap.entrySet()) {
+            //确保项目是当前用户线程下的用户所拥有
             if(!Objects.equals(entry.getValue().getUserId(), id)){
                 continue;
             }
@@ -159,8 +161,10 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
         ArrayList<MaterialSimilarityDto> materialSimilarityDtos1 = new ArrayList<>();
         ArrayList<MaterialSimilarityDto> materialSimilarityDtos2 = new ArrayList<>();
         LambdaQueryWrapper<Material> materialLambdaQueryWrapper1 = new LambdaQueryWrapper<>();
+        //条件查询，获取项目1的所有资料
         materialLambdaQueryWrapper1.eq(Material::getProjectId, project1Id);
         List<Material> materials1 = materialService.list(materialLambdaQueryWrapper1);
+
         LambdaQueryWrapper<Material> materialLambdaQueryWrapper2 = new LambdaQueryWrapper<>();
         materialLambdaQueryWrapper2.eq(Material::getProjectId, project2Id);
         List<Material> materials2 = materialService.list(materialLambdaQueryWrapper2);

@@ -42,13 +42,20 @@ public class FileServiceImpl implements FileService {
         if (!dir.exists()){
             dir.mkdirs();
         }
-        // 4.将上传的文件保存到指定的路径
+        // 4.判断该路径下是否已经存在同名字的文件，不允许重复上传同名文件
+        File[] files = dir.listFiles();
+        for (File f : files) {
+            if (f.getName().equals(originalFilename)){
+                return "文件已存在";
+            }
+        }
+        // 5.将上传的文件保存到指定的路径
         try {
             file.transferTo(new File(basePath + originalFilename));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        // 5.返回数据给前端
+        // 6.返回数据给前端
         return originalFilename;
     }
 

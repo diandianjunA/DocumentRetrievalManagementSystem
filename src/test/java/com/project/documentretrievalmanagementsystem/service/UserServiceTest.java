@@ -58,7 +58,7 @@ public class UserServiceTest {
             user.setUserName("myy");
             user.setPassword("51888");
             user.setStatus(0);
-            when(userMapper.selectOne(any())).thenReturn(user);
+            when(userMapper.selectOne(any())).thenReturn(user);     //使用测试框架
             // When & Then
             assertThrows(HaveDisabledException.class, () -> userServiceImpl.login(requestBody, session));
     }
@@ -81,8 +81,6 @@ public class UserServiceTest {
             assertThrows(PasswordWrongException.class, () -> userServiceImpl.login(requestBody, session));
 
     }
-
-    //测试用户登录成功
 
 }
 

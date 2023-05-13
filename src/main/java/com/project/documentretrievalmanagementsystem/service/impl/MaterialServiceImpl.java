@@ -11,6 +11,8 @@ import com.project.documentretrievalmanagementsystem.dto.EsQueryDto;
 import com.project.documentretrievalmanagementsystem.dto.MaterialDto;
 import com.project.documentretrievalmanagementsystem.entity.Material;
 import com.project.documentretrievalmanagementsystem.entity.Project;
+import com.project.documentretrievalmanagementsystem.exception.SameFileException;
+import com.project.documentretrievalmanagementsystem.exception.SameMaterialNameException;
 import com.project.documentretrievalmanagementsystem.mapper.MaterialMapper;
 import com.project.documentretrievalmanagementsystem.service.FileService;
 import com.project.documentretrievalmanagementsystem.service.IMaterialService;
@@ -18,13 +20,10 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.project.documentretrievalmanagementsystem.service.IProjectService;
 import com.project.documentretrievalmanagementsystem.service.ISchemeService;
 import com.project.documentretrievalmanagementsystem.utils.FileRdWt;
-import com.project.documentretrievalmanagementsystem.utils.TransTotxt;
 import com.project.documentretrievalmanagementsystem.utils.TransTotxtS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -68,9 +67,20 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
     ISchemeService schemeService;
 
     @Override
-    public Material addMaterial(String name, Integer projectId, MultipartFile file) {
-        //上传文件
+    public Material addMaterial(String name, Integer projectId, MultipartFile file) throws SameMaterialNameException, SameFileException{
+        //判断该文件是否已经存在，不允许上传同名文件
+        LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        materialLambdaQueryWrapper.eq(Material::getName,name);
+        materialLambdaQueryWrapper.eq(Material::getProjectId,projectId);
+        Material material1 = getOne(materialLambdaQueryWrapper);
+        if (material1 != null){
+            throw new SameMaterialNameException("文件名字重复，请重新命名");
+        }
+//上传文件
         String originalName = fileService.upload(file, basePath);
+        if(originalName.equals("文件已存在")){
+            throw new SameFileException("文件已存在");
+        }
         Material material = new Material();
         material.setName(name);
         material.setProjectId(projectId);
@@ -127,16 +137,7 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
     public void deleteMaterial(Integer id) {
         Material material = getById(id);
         //删除资料文件
-        File file = new File(material.getLocation());
-        if(file.exists()){
-            file.delete();
-        }
-        //删除资料所对应的向量文件
-        String vectorLocation = material.getVectorLocation();
-        File vectorFile = new File(vectorLocation);
-        if(vectorFile.exists()){
-            vectorFile.delete();
-        }
+        delete_vec_txt_file(material, basePathT);
         //删除数据库记录
         removeById(id);
     }

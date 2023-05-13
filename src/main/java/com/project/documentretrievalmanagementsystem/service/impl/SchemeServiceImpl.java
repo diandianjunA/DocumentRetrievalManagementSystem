@@ -79,6 +79,7 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
 
     @Override
     public XSSFWorkbook downloadExcel(List<Scheme> list) {
+        //定义Excel表格
         String[] excelHeader = { "Id", "方案名", "用户Id", "资料Id", "项目Id", "摘要"};
         XSSFWorkbook wb = new XSSFWorkbook();
         //创建XSSFSheet对象

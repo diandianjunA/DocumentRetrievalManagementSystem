@@ -10,6 +10,8 @@ import com.project.documentretrievalmanagementsystem.dto.MaterialDto;
 import com.project.documentretrievalmanagementsystem.dto.MaterialFileDto;
 import com.project.documentretrievalmanagementsystem.entity.Material;
 import com.project.documentretrievalmanagementsystem.exception.FileDownloadException;
+import com.project.documentretrievalmanagementsystem.exception.SameFileException;
+import com.project.documentretrievalmanagementsystem.exception.SameMaterialNameException;
 import com.project.documentretrievalmanagementsystem.service.FileService;
 import com.project.documentretrievalmanagementsystem.service.IMaterialService;
 import com.project.documentretrievalmanagementsystem.service.IProjectService;
@@ -23,7 +25,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
@@ -52,7 +53,7 @@ public class MaterialController {
 
     @PostMapping("/add")
     @ApiOperation("添加资料")
-    public R<Material> addMaterial(MaterialFileDto materialFileDto){
+    public R<Material> addMaterial(MaterialFileDto materialFileDto) throws SameMaterialNameException , SameFileException {
         Material material = materialService.addMaterial(materialFileDto.getName(), materialFileDto.getProjectId(), materialFileDto.getFile());
         return R.success(material);
     }

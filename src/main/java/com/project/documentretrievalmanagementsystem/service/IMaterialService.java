@@ -6,6 +6,7 @@ import com.project.documentretrievalmanagementsystem.dto.MaterialDto;
 import com.project.documentretrievalmanagementsystem.entity.Material;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.project.documentretrievalmanagementsystem.entity.Project;
+import com.project.documentretrievalmanagementsystem.exception.SameMaterialNameException;
 import io.swagger.annotations.ApiParam;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,7 +24,7 @@ import java.util.Map;
  * @since 2023-04-14
  */
 public interface IMaterialService extends IService<Material> {
-    Material addMaterial(String name, Integer projectId, MultipartFile file);
+    Material addMaterial(String name, Integer projectId, MultipartFile file) throws SameMaterialNameException;
 
     List<MaterialDto> fuzzyQuery(EsQueryDto esQueryDto) throws Exception;
 

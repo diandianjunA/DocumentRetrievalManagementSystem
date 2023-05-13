@@ -1,8 +1,6 @@
 package com.project.documentretrievalmanagementsystem.common;
 
-import com.project.documentretrievalmanagementsystem.exception.FileDownloadException;
-import com.project.documentretrievalmanagementsystem.exception.HaveDisabledException;
-import com.project.documentretrievalmanagementsystem.exception.PasswordWrongException;
+import com.project.documentretrievalmanagementsystem.exception.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -49,6 +47,17 @@ public class GlobalExceptionHandler {
         return R.error(message);
     }
 
+    @ExceptionHandler(SameMaterialNameException.class)
+    public R<String> SameMaterialNameException(SameMaterialNameException exception){
+        String message=exception.getMessage();
+        return R.error(message);
+    }
+
+    @ExceptionHandler(SameFileException.class)
+    public R<String> SameFileException(SameFileException exception){
+        String message=exception.getMessage();
+        return R.error(message);
+    }
     @ExceptionHandler(RuntimeException.class)
     public R<String> RuntimeException(RuntimeException exception){
         String message=exception.getMessage();

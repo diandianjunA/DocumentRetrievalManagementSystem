@@ -59,7 +59,6 @@ public class FileServiceTest {
     @Mock
     private HttpSession session;
 
-    private String basePathDownload;
 
     @Test
     public void upload() throws Exception {
@@ -100,8 +99,6 @@ public class FileServiceTest {
         MockHttpSession mockSession = new MockHttpSession();
         mockSession.setAttribute("username", "testuser");
 
-        // 设置mock对象的行为
-        session.getAttribute("username");
 
         // 调用被测试方法
         ResponseEntity<byte[]> responseEntity = fileService.download(mockSession,mybasePath,"test.txt");

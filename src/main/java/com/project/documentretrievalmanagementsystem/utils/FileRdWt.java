@@ -41,6 +41,7 @@ public class FileRdWt {
     public static StringBuffer readTxt(String path) throws IOException {
         File file = new File(path);
         FileReader fr = new FileReader(file);
+        //缓存文本数据以便更快的读取
         BufferedReader br = new BufferedReader(fr);
 
         String line;
