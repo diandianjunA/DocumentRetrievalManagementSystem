@@ -31,15 +31,14 @@ import java.util.UUID;
 @Service
 public class FileServiceImpl implements FileService {
 
-    //不分类，即不放入文件夹，直接放在项目文件夹下
     @Override
-    public String upload(MultipartFile file,String basePath) {
+    public String upload(MultipartFile file,String Path) {
         // 1.获取当前上传的文件名
         String originalFilename = file.getOriginalFilename();
         // 2.截取当前文件名的格式后缀
         String suffix = originalFilename.substring(originalFilename.lastIndexOf("."));
         // 3.判断要存储文件的路径是否存在，不存在则创建
-        File dir = new File(basePath);
+        File dir = new File(Path);
         if (!dir.exists()){
             dir.mkdirs();
         }
@@ -52,7 +51,7 @@ public class FileServiceImpl implements FileService {
         }
         // 5.将上传的文件保存到指定的路径
         try {
-            file.transferTo(new File(basePath + originalFilename));
+            file.transferTo(new File(Path + originalFilename));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -60,12 +59,11 @@ public class FileServiceImpl implements FileService {
         return originalFilename;
     }
 
-    //分类，即放入自己所创建的文件夹下
 
     @Override
-    public ResponseEntity<byte[]> download(HttpSession session, String basePath, String fileName) throws IOException {
+    public ResponseEntity<byte[]> download(HttpSession session, String Path, String fileName) throws IOException {
         //获取服务器中文件的真实路径
-        String realPath = basePath+fileName;
+        String realPath = Path+fileName;
         //创建输入流
         InputStream is = Files.newInputStream(Paths.get(realPath));
         //创建字节数组

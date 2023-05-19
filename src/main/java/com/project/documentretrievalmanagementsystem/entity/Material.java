@@ -40,6 +40,9 @@ public class Material implements Serializable {
     @ApiModelProperty(value = "资料地址")
     private String location;
 
+    @ApiModelProperty(value = "资料在用户空间中的地址")
+    private String loc_in_user;
+
     @ApiModelProperty(value = "所属用户的id")
     private Integer userId;
 

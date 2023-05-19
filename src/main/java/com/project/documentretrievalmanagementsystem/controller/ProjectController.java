@@ -130,6 +130,16 @@ public class ProjectController {
         for (Material material:list) {
             materialService.deleteById(material.getId());
         }
+        String userName = UserHolder.getUser().getUserName();
+        String userDir = UserPath+userName+"/";
+        //根据项目id获取项目名称
+        Project project = projectService.getById(id);
+        String projectDir = userDir+project.getName();
+        //根据projectDir删除项目目录
+        java.io.File file = new java.io.File(projectDir);
+        if(file.exists()){
+            file.delete();
+        }
         if(deleteProject){
             return R.success(1);
         }else{
