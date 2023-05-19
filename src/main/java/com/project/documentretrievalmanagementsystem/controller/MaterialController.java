@@ -6,9 +6,11 @@ import com.github.pagehelper.PageInfo;
 import com.project.documentretrievalmanagementsystem.common.R;
 import com.project.documentretrievalmanagementsystem.common.UserHolder;
 import com.project.documentretrievalmanagementsystem.dto.EsQueryDto;
+import com.project.documentretrievalmanagementsystem.dto.FuzzyQueryDto;
 import com.project.documentretrievalmanagementsystem.dto.MaterialDto;
 import com.project.documentretrievalmanagementsystem.dto.MaterialFileDto;
 import com.project.documentretrievalmanagementsystem.entity.Material;
+import com.project.documentretrievalmanagementsystem.entity.Record;
 import com.project.documentretrievalmanagementsystem.entity.Project;
 import com.project.documentretrievalmanagementsystem.exception.FileDownloadException;
 import com.project.documentretrievalmanagementsystem.exception.SameFileException;
@@ -16,6 +18,7 @@ import com.project.documentretrievalmanagementsystem.exception.SameMaterialNameE
 import com.project.documentretrievalmanagementsystem.service.FileService;
 import com.project.documentretrievalmanagementsystem.service.IMaterialService;
 import com.project.documentretrievalmanagementsystem.service.IProjectService;
+import com.project.documentretrievalmanagementsystem.service.IRecordService;
 import com.project.documentretrievalmanagementsystem.utils.CreateFolder;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -29,6 +32,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -50,6 +54,8 @@ public class MaterialController {
     IProjectService projectService;
     @Autowired
     FileService fileService;
+    @Autowired
+    IRecordService recordService;
     @Value("${my.basePathT}")
     private String basePathT;
     @Value("${my.UserPath}")
@@ -145,6 +151,12 @@ public class MaterialController {
     @ApiOperation("更新资料信息")
     public R<Material> updateMaterial(@ApiParam("资料数据") @RequestBody Material material){
         if(materialService.updateById(material)){
+            Integer currentId = UserHolder.getUser().getId();
+            Record record = new Record();
+            record.setUserId(currentId);
+            record.setTime(LocalDateTime.now());
+            record.setInformation("更新"+material.getName()+"资料");
+            recordService.save(record);
             return R.success(material);
         }else{
             return R.error("修改失败");
@@ -155,8 +167,15 @@ public class MaterialController {
     @ResponseBody
     @ApiOperation("在删除数据库上资料的同时，删除服务器上的文件")
     public R deleteMaterial(@ApiParam("资料id") Integer id){
+        Material material = materialService.getById(id);
         try {
             materialService.deleteById(id);
+            Record record = new Record();
+            Integer currentId = UserHolder.getUser().getId();
+            record.setUserId(currentId);
+            record.setTime(LocalDateTime.now());
+            record.setInformation("删除"+material.getName()+"项目");
+            recordService.save(record);
             return R.success("删除成功");
         } catch (Exception e) {
             return R.success("删除失败");
@@ -165,14 +184,14 @@ public class MaterialController {
 
     @GetMapping("/getFuzzyPaged")
     @ApiOperation("获取模糊查询分页资料信息")
-    public R<List<MaterialDto>> getFuzzyPagedMaterial(@ApiParam("第几页")Integer pageNum, @ApiParam("一页多少条数据")int pageSize,@ApiParam("搜索关键字") String keyWord){
+    public R<FuzzyQueryDto> getFuzzyPagedMaterial(@ApiParam("第几页")Integer pageNum, @ApiParam("一页多少条数据")Integer pageSize, @ApiParam("搜索关键字") String keyWord){
         try {
             EsQueryDto esQueryDto = new EsQueryDto();
             esQueryDto.setFrom((pageNum-1)*pageSize);
             esQueryDto.setSize((pageNum-1)*pageSize+pageSize);
             esQueryDto.setWord(keyWord);
-            List<MaterialDto> materialDtos = materialService.fuzzyQuery(esQueryDto);
-            return R.success(materialDtos);
+            FuzzyQueryDto FuzzyQueryDto = materialService.fuzzyQuery(esQueryDto);
+            return R.success(FuzzyQueryDto);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

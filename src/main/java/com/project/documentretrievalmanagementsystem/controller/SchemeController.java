@@ -10,6 +10,7 @@ import com.project.documentretrievalmanagementsystem.dto.MaterialDto;
 import com.project.documentretrievalmanagementsystem.dto.SchemeDto;
 import com.project.documentretrievalmanagementsystem.entity.Material;
 import com.project.documentretrievalmanagementsystem.entity.Project;
+import com.project.documentretrievalmanagementsystem.entity.Record;
 import com.project.documentretrievalmanagementsystem.entity.Scheme;
 import com.project.documentretrievalmanagementsystem.entity.User;
 import com.project.documentretrievalmanagementsystem.service.*;
@@ -28,6 +29,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -56,6 +58,8 @@ public class SchemeController {
     ISchemeService schemeService;
     @Autowired
     IUserService userService;
+    @Autowired
+    IRecordService recordService;
 
     //方案生成
     @GetMapping("/generate")
@@ -73,6 +77,11 @@ public class SchemeController {
         Integer currentId = UserHolder.getUser().getId();
         scheme.setUserId(currentId);
         schemeService.save(scheme);
+        Record record = new Record();
+        record.setUserId(currentId);
+        record.setTime(LocalDateTime.now());
+        record.setInformation("删除"+scheme.getName()+"项目");
+        recordService.save(record);
         return R.success(scheme);
     }
 
@@ -133,7 +142,14 @@ public class SchemeController {
     @GetMapping("/delete")
     @ApiOperation("删除方案")
     public R<String> deleteScheme(@ApiParam("方案id") Integer id){
+        Scheme scheme = schemeService.getById(id);
         schemeService.removeById(id);
+        Integer currentId = UserHolder.getUser().getId();
+        Record record = new Record();
+        record.setUserId(currentId);
+        record.setTime(LocalDateTime.now());
+        record.setInformation("删除"+scheme.getName()+"方案");
+        recordService.save(record);
         return R.success("删除成功");
     }
 
@@ -141,6 +157,12 @@ public class SchemeController {
     @ApiOperation("更新方案")
     public R<String> updateScheme(@RequestBody Scheme scheme){
         schemeService.updateById(scheme);
+        Integer currentId = UserHolder.getUser().getId();
+        Record record = new Record();
+        record.setUserId(currentId);
+        record.setTime(LocalDateTime.now());
+        record.setInformation("更新"+scheme.getName()+"方案");
+        recordService.save(record);
         return R.success("更新成功");
     }
 }

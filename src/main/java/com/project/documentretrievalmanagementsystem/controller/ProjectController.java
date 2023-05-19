@@ -10,8 +10,10 @@ import com.project.documentretrievalmanagementsystem.dto.ProjectDto;
 import com.project.documentretrievalmanagementsystem.dto.SimilarityDto;
 import com.project.documentretrievalmanagementsystem.entity.Material;
 import com.project.documentretrievalmanagementsystem.entity.Project;
+import com.project.documentretrievalmanagementsystem.entity.Record;
 import com.project.documentretrievalmanagementsystem.service.IMaterialService;
 import com.project.documentretrievalmanagementsystem.service.IProjectService;
+import com.project.documentretrievalmanagementsystem.service.IRecordService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -20,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -41,6 +44,8 @@ public class ProjectController {
     IProjectService projectService;
     @Autowired
     IMaterialService materialService;
+    @Autowired
+    IRecordService recordService;
     @Value("${my.basePath}")
     private String basePath;
     @Value("${my.UserPath}")
@@ -52,6 +57,11 @@ public class ProjectController {
         Integer currentId = UserHolder.getUser().getId();
         project.setUserId(currentId);
         if(projectService.save(project)){
+            Record record = new Record();
+            record.setUserId(currentId);
+            record.setTime(LocalDateTime.now());
+            record.setInformation("创建"+project.getName()+"项目");
+            recordService.save(record);
             //创建项目目录
             String userName = UserHolder.getUser().getUserName();
             String userDir = UserPath+userName+"/";
@@ -92,16 +102,8 @@ public class ProjectController {
             PageHelper.startPage(pageNum,pageSize);
             LambdaQueryWrapper<Project> projectLambdaQueryWrapper = new LambdaQueryWrapper<>();
             Integer currentId = UserHolder.getUser().getId();
-            if(projectName!=null&& !projectName.equals("")){
-                projectLambdaQueryWrapper.or().like(Project::getName,projectName);
-            }
-            if(category!=null&& !category.equals("")){
-                projectLambdaQueryWrapper.or().like(Project::getCategory,category);
-            }
-            if(remark!=null&& !remark.equals("")){
-                projectLambdaQueryWrapper.or().like(Project::getRemark,remark);
-            }
-            projectLambdaQueryWrapper.and(i->i.eq(Project::getUserId,currentId));
+            projectLambdaQueryWrapper.eq(Project::getUserId,currentId);
+            projectLambdaQueryWrapper.and(projectQueryWrapper -> projectQueryWrapper.like(Project::getName,projectName).or().like(Project::getCategory,category).or().like(Project::getRemark,remark));
             List<Project> list = projectService.list(projectLambdaQueryWrapper);
             PageInfo<Project> projectPageInfo = new PageInfo<>(list,navSize);
             return R.success(projectPageInfo);
@@ -114,6 +116,11 @@ public class ProjectController {
     @ApiOperation("更新项目信息")
     public R<Project> updateProject(@RequestBody @ApiParam("项目数据") Project project){
         if(projectService.updateById(project)){
+            Record record = new Record();
+            record.setUserId(project.getUserId());
+            record.setTime(LocalDateTime.now());
+            record.setInformation("修改"+project.getName()+"项目");
+            recordService.save(record);
             return R.success(project);
         }else{
             return R.error("修改失败");
@@ -123,6 +130,7 @@ public class ProjectController {
     @GetMapping("/delete")
     @ApiOperation("删除项目")
     public R<Integer> deleteProject(@ApiParam("项目id") Integer id){
+        Project project = projectService.getById(id);
         boolean deleteProject = projectService.removeById(id);
         LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
         materialLambdaQueryWrapper.eq(Material::getProjectId,id);
@@ -133,7 +141,6 @@ public class ProjectController {
         String userName = UserHolder.getUser().getUserName();
         String userDir = UserPath+userName+"/";
         //根据项目id获取项目名称
-        Project project = projectService.getById(id);
         String projectDir = userDir+project.getName();
         //根据projectDir删除项目目录
         java.io.File file = new java.io.File(projectDir);
@@ -141,6 +148,11 @@ public class ProjectController {
             file.delete();
         }
         if(deleteProject){
+            Record record = new Record();
+            record.setUserId(project.getUserId());
+            record.setTime(LocalDateTime.now());
+            record.setInformation("删除"+project.getName()+"项目");
+            recordService.save(record);
             return R.success(1);
         }else{
             return R.error("删除失败");

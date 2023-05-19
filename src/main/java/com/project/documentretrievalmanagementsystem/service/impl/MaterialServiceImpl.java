@@ -3,22 +3,23 @@ package com.project.documentretrievalmanagementsystem.service.impl;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
+import co.elastic.clients.elasticsearch.core.search.TotalHits;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.project.documentretrievalmanagementsystem.common.UserHolder;
 import com.project.documentretrievalmanagementsystem.dto.EsQueryDto;
+import com.project.documentretrievalmanagementsystem.dto.FuzzyQueryDto;
 import com.project.documentretrievalmanagementsystem.dto.MaterialDto;
 import com.project.documentretrievalmanagementsystem.entity.Material;
 import com.project.documentretrievalmanagementsystem.entity.Project;
+import com.project.documentretrievalmanagementsystem.entity.Record;
+import com.project.documentretrievalmanagementsystem.entity.User;
 import com.project.documentretrievalmanagementsystem.exception.SameFileException;
 import com.project.documentretrievalmanagementsystem.exception.SameMaterialNameException;
 import com.project.documentretrievalmanagementsystem.mapper.MaterialMapper;
-import com.project.documentretrievalmanagementsystem.service.FileService;
-import com.project.documentretrievalmanagementsystem.service.IMaterialService;
+import com.project.documentretrievalmanagementsystem.service.*;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.project.documentretrievalmanagementsystem.service.IProjectService;
-import com.project.documentretrievalmanagementsystem.service.ISchemeService;
 import com.project.documentretrievalmanagementsystem.utils.FileRdWt;
 import com.project.documentretrievalmanagementsystem.utils.TransTotxtS;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -66,6 +68,12 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
     @Autowired
     ISchemeService schemeService;
 
+    @Autowired
+    IRecordService recordService;
+
+    @Autowired
+    IUserService userService;
+
     //修改可以上传同名资料和相同文件
     @Override
     public Material addMaterial(String name, Integer projectId, MultipartFile file) throws SameMaterialNameException, SameFileException{
@@ -93,7 +101,11 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
         String vecLocation = basePathT + material.getName() + "vector.txt";
         material.setVectorLocation(vecLocation);
         save(material);     //保存到数据库
-
+        Record record = new Record();
+        record.setUserId(currentId);
+        record.setTime(LocalDateTime.now());
+        record.setInformation("上传"+material.getName()+"资料");
+        recordService.save(record);
         //将docx文件转换为txt文件
         TransTotxtS.DocxToTxt(Location,LocationT);
 
@@ -251,35 +263,67 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
     }
 
     @Override
-    public List<MaterialDto> fuzzyQuery(EsQueryDto esQueryDto) throws Exception {
+    public FuzzyQueryDto fuzzyQuery(EsQueryDto esQueryDto) throws Exception {
         esQueryDto.setIndex("resumes");
         esQueryDto.setField("content");
         SearchResponse<HashMap> search;
         if(!Objects.equals(esQueryDto.getWord(), "")){
             search = elasticsearchClient.search(s -> s
-                    .index(esQueryDto.getIndex())
-                    .query(q -> q.match(t->t.field(esQueryDto.getField()).query(esQueryDto.getWord()))), HashMap.class);
+                    .index(esQueryDto.getIndex()).highlight(h -> h.fields(esQueryDto.getField(), f -> f.preTags("<span style='color:red'>").postTags("</span>").fragmentSize(100)))
+                    .query(q -> q.match(t->t.field(esQueryDto.getField()).query(esQueryDto.getWord()))).from(esQueryDto.getFrom()).size(esQueryDto.getSize()), HashMap.class);
+            List<Hit<HashMap>> hits = search.hits().hits();
+            ArrayList<MaterialDto> res = new ArrayList<>();
+            Map<Integer, User> userMap = userService.getUserMap();
+            for (Hit<HashMap> hit:hits){
+                HashMap source = hit.source();
+                HashMap file = (HashMap) source.get("file");
+                String location = (String) file.get("url");
+                location=location.substring(7);
+                LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                materialLambdaQueryWrapper.eq(Material::getLocation,location);
+                List<Material> list = list(materialLambdaQueryWrapper);
+                MaterialDto materialDto = new MaterialDto(list.get(0));
+                Project project = projectService.getById(materialDto.getProjectId());
+                materialDto.setProjectName(project.getName());
+                materialDto.setCategory(project.getCategory());
+                materialDto.setUserName(userMap.get(materialDto.getUserId()).getUserName());
+                String content = hit.highlight().get(esQueryDto.getField()).get(0);
+                materialDto.setContent(content);
+                res.add(materialDto);
+            }
+            FuzzyQueryDto fuzzyQueryDto = new FuzzyQueryDto();
+            fuzzyQueryDto.setTotal((int)search.hits().total().value());
+            fuzzyQueryDto.setList(res);
+            return fuzzyQueryDto;
         }else{
             search = elasticsearchClient.search(s -> s
-                    .index(esQueryDto.getIndex()), HashMap.class);
+                    .index(esQueryDto.getIndex()).highlight(h -> h.fields(esQueryDto.getField(),f -> f.preTags("<span style='color:red'>").postTags("</span>").fragmentSize(100)))
+                    .from(esQueryDto.getFrom()).size(esQueryDto.getSize()), HashMap.class);
+            List<Hit<HashMap>> hits = search.hits().hits();
+            ArrayList<MaterialDto> res = new ArrayList<>();
+            Map<Integer, User> userMap = userService.getUserMap();
+            for (Hit<HashMap> hit:hits){
+                HashMap source = hit.source();
+                HashMap file = (HashMap) source.get("file");
+                String location = (String) file.get("url");
+                location=location.substring(7);
+                LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                materialLambdaQueryWrapper.eq(Material::getLocation,location);
+                List<Material> list = list(materialLambdaQueryWrapper);
+                MaterialDto materialDto = new MaterialDto(list.get(0));
+                Project project = projectService.getById(materialDto.getProjectId());
+                materialDto.setProjectName(project.getName());
+                materialDto.setCategory(project.getCategory());
+                materialDto.setUserName(userMap.get(materialDto.getUserId()).getUserName());
+                String content = (String) source.get("content");
+                content=content.substring(0,Math.min(content.length(),100));
+                materialDto.setContent(content);
+                res.add(materialDto);
+            }
+            FuzzyQueryDto fuzzyQueryDto = new FuzzyQueryDto();
+            fuzzyQueryDto.setTotal((int)search.hits().total().value());
+            fuzzyQueryDto.setList(res);
+            return fuzzyQueryDto;
         }
-        List<Hit<HashMap>> hits = search.hits().hits();
-        ArrayList<MaterialDto> res = new ArrayList<>();
-        for (Hit<HashMap> hit:hits){
-            HashMap source = hit.source();
-            HashMap file = (HashMap) source.get("file");
-            String location = (String) file.get("url");
-            location=location.substring(7);
-            LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            materialLambdaQueryWrapper.eq(Material::getLocation,location);
-            List<Material> list = list(materialLambdaQueryWrapper);
-            MaterialDto materialDto = new MaterialDto(list.get(0));
-            Project project = projectService.getById(materialDto.getProjectId());
-            materialDto.setProjectName(project.getName());
-            String content = (String) source.get("content");
-            materialDto.setContent(content);
-            res.add(materialDto);
-        }
-        return res;
     }
 }

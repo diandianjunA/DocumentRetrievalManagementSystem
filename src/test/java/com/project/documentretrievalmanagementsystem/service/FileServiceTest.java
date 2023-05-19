@@ -1,16 +1,10 @@
 package com.project.documentretrievalmanagementsystem.service;
 
-import com.project.documentretrievalmanagementsystem.controller.FileController;
 import com.project.documentretrievalmanagementsystem.service.impl.FileServiceImpl;
 import org.apache.http.entity.ContentType;
-import org.junit.Test;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.stubbing.OngoingStubbing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,7 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.ServletOutputStream;
@@ -32,37 +25,27 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static javaslang.control.Option.when;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-/************************
- * DocumentRetrievalManagementSystem
- * com.project.documentretrievalmanagementsystem.service
- * MHC
- * author : mhc
- * date:  2023/5/5 19:20
- * description : 文件操作服务类测试
- ************************/
-@RunWith(SpringRunner.class)
 @SpringBootTest
-@ExtendWith(MockitoExtension.class)
-public class FileServiceTest {
+class FileServiceTest {
+
     @Autowired
     private FileServiceImpl fileService;
 
     @Value("${my.basePathT}")
-    private String mybasePath;
+    private String myBasePath;
 
     @Mock
     private HttpSession session;
 
 
     @Test
-    public void upload() throws Exception {
-        String basePath = mybasePath + "test/";
+    void upload() throws IOException {
+        String basePath = myBasePath + "test/";
         String filename = "test.txt";
         byte[] content = new byte[1024];
 
@@ -88,11 +71,11 @@ public class FileServiceTest {
     }
 
     @Test
-    public void testDownload() throws Exception {
+    void download() throws IOException {
         // 准备要下载的文件
         String fileName = "test.txt";
         String fileContent = "hello world";
-        Path file = Paths.get(mybasePath, fileName);
+        Path file = Paths.get(myBasePath, fileName);
         Files.write(file, fileContent.getBytes(StandardCharsets.UTF_8));
 
         // 创建一个模拟的HttpSession对象
@@ -101,7 +84,7 @@ public class FileServiceTest {
 
 
         // 调用被测试方法
-        ResponseEntity<byte[]> responseEntity = fileService.download(mockSession,mybasePath,"test.txt");
+        ResponseEntity<byte[]> responseEntity = fileService.download(mockSession, myBasePath,"test.txt");
 
         // 验证返回结果是否正确
         assertNotNull(responseEntity);
@@ -126,7 +109,7 @@ public class FileServiceTest {
     }
 
     @Test
-    public void testDownloadFile() throws Exception {
+    void testDownload() throws IOException {
         HttpServletResponse response = mock(HttpServletResponse.class);
         ServletOutputStream outputStream = mock(ServletOutputStream.class);
         //返回一个输出流

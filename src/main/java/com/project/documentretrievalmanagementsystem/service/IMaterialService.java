@@ -2,6 +2,7 @@ package com.project.documentretrievalmanagementsystem.service;
 
 import com.github.pagehelper.PageInfo;
 import com.project.documentretrievalmanagementsystem.dto.EsQueryDto;
+import com.project.documentretrievalmanagementsystem.dto.FuzzyQueryDto;
 import com.project.documentretrievalmanagementsystem.dto.MaterialDto;
 import com.project.documentretrievalmanagementsystem.entity.Material;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -26,7 +27,7 @@ import java.util.Map;
 public interface IMaterialService extends IService<Material> {
     Material addMaterial(String name, Integer projectId, MultipartFile file) throws SameMaterialNameException;
 
-    List<MaterialDto> fuzzyQuery(EsQueryDto esQueryDto) throws Exception;
+    FuzzyQueryDto fuzzyQuery(EsQueryDto esQueryDto) throws Exception;
 
     //删除服务器或者本地上的资料
     void deleteMaterial(Integer id);

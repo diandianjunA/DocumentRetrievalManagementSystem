@@ -2,6 +2,7 @@ package com.project.documentretrievalmanagementsystem;
 
 import com.github.pagehelper.PageInfo;
 import com.project.documentretrievalmanagementsystem.dto.EsQueryDto;
+import com.project.documentretrievalmanagementsystem.dto.FuzzyQueryDto;
 import com.project.documentretrievalmanagementsystem.dto.MaterialDto;
 import com.project.documentretrievalmanagementsystem.dto.ProjectDto;
 import com.project.documentretrievalmanagementsystem.mapper.UserMapper;
@@ -62,10 +63,7 @@ class DocumentRetrievalManagementSystemApplicationTests {
         esQueryDto.setFrom(2);
         esQueryDto.setSize(5);
         esQueryDto.setWord("");
-        List<MaterialDto> materialDtos = materialService.fuzzyQuery(esQueryDto);
-        for (MaterialDto materialDto : materialDtos) {
-            System.out.println(materialDto);
-        }
+        FuzzyQueryDto materialDtos = materialService.fuzzyQuery(esQueryDto);
     }
 
     @Test
@@ -75,12 +73,6 @@ class DocumentRetrievalManagementSystemApplicationTests {
     }
 
 
-    @Test
-    void downloadScheme() throws Exception {
-        List list = schemeService.getSchemeByMaterialId(4);
-        XSSFWorkbook scheme = schemeService.downloadExcel(list);
-        System.out.println(scheme.toString());
-    }
 
    /* @Test
     void similarity() throws Exception {

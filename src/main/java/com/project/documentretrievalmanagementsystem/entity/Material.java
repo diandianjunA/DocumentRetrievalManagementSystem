@@ -1,5 +1,6 @@
 package com.project.documentretrievalmanagementsystem.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -41,6 +42,7 @@ public class Material implements Serializable {
     private String location;
 
     @ApiModelProperty(value = "资料在用户空间中的地址")
+    @TableField("loc_belong_user")
     private String loc_in_user;
 
     @ApiModelProperty(value = "所属用户的id")
