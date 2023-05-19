@@ -14,7 +14,7 @@ public class MaterialDto extends Material {
 
     public MaterialDto(Material material){
         this.setId(material.getId());
-        this.setLoc_in_user(material.getLoc_in_user());
+        this.setLocInUser(material.getLocInUser());
         this.setName(material.getName());
         this.setProjectId(material.getProjectId());
         this.setLocation(material.getLocation());

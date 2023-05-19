@@ -2,6 +2,7 @@ package com.project.documentretrievalmanagementsystem.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.project.documentretrievalmanagementsystem.entity.Material;
 import com.project.documentretrievalmanagementsystem.entity.Scheme;
+import com.project.documentretrievalmanagementsystem.mapper.MaterialMapper;
 import com.project.documentretrievalmanagementsystem.mapper.SchemeMapper;
 import com.project.documentretrievalmanagementsystem.service.FileService;
 import com.project.documentretrievalmanagementsystem.service.IMaterialService;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.InputStreamReader;
@@ -35,6 +37,8 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
     @Lazy
     @Autowired
     IMaterialService materialService;
+    @Autowired
+    MaterialMapper materialMapper;
 
     @Value("${my.basePathT}")
     private String basePathT;
@@ -44,6 +48,7 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
     private String pythonPath;
     @Value("${my.scriptPath}")
     private String scriptPath;
+
 
     @Override
     //调用python脚本生成资料摘要
@@ -108,6 +113,36 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
             row.createCell(5).setCellValue(scheme.getSummary());
         }
         return wb;
+    }
+
+    //删除资料分类文件夹
+    public void deleteCategoryFolder(String Path) {
+        File file = new File(Path);
+        if (file.exists()) {
+            //文件存在时，判断是文件还是目录，如果是文件，则直接删除
+            if (file.isFile()) {
+                //根据Path查找数据库中的Material
+                LambdaQueryWrapper<Material> queryWrapper = new LambdaQueryWrapper<>();
+                String PathC = Path.replace("\\", "/");
+                queryWrapper.eq(Material::getLocInUser, PathC);
+                // 执行查询操作，取出符合条件的实体列表
+                List<Material> materialList = materialMapper.selectList(queryWrapper);
+                Material material = materialList.get(0);
+                //删除数据库中的记录
+                materialMapper.deleteById(material.getId());
+                file.delete();
+
+            } else if (file.isDirectory()) {
+                //先删除目录下所有的文件以及子目录以及子目录下的文件
+                String[] list = file.list();
+                for (String s : list) {
+                    //递归删除目录下的文件
+                    deleteCategoryFolder(Path + "\\" + s);
+                }
+                //删除目录
+                file.delete();
+            }
+        }
     }
 
    /* @Override

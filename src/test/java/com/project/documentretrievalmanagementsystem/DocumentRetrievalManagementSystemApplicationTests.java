@@ -1,14 +1,19 @@
 package com.project.documentretrievalmanagementsystem;
 
 import com.github.pagehelper.PageInfo;
+import com.project.documentretrievalmanagementsystem.controller.MaterialController;
 import com.project.documentretrievalmanagementsystem.dto.EsQueryDto;
 import com.project.documentretrievalmanagementsystem.dto.FuzzyQueryDto;
 import com.project.documentretrievalmanagementsystem.dto.MaterialDto;
 import com.project.documentretrievalmanagementsystem.dto.ProjectDto;
+import com.project.documentretrievalmanagementsystem.entity.Material;
+import com.project.documentretrievalmanagementsystem.mapper.MaterialMapper;
 import com.project.documentretrievalmanagementsystem.mapper.UserMapper;
 import com.project.documentretrievalmanagementsystem.service.IMaterialService;
 import com.project.documentretrievalmanagementsystem.service.ISchemeService;
 import com.project.documentretrievalmanagementsystem.service.impl.ProjectServiceImpl;
+import com.project.documentretrievalmanagementsystem.service.impl.SchemeServiceImpl;
+import com.project.documentretrievalmanagementsystem.utils.CreateFolder;
 import io.github.swagger2markup.Swagger2MarkupConfig;
 import io.github.swagger2markup.Swagger2MarkupConverter;
 import io.github.swagger2markup.builder.Swagger2MarkupConfigBuilder;
@@ -17,8 +22,11 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
@@ -33,7 +41,9 @@ class DocumentRetrievalManagementSystemApplicationTests {
     @Autowired
     IMaterialService materialService;
     @Autowired
-    ISchemeService schemeService;
+    MaterialMapper materialMapper;
+    @Autowired
+    SchemeServiceImpl schemeService;
     @Autowired
     ProjectServiceImpl projectService;
 
@@ -79,6 +89,17 @@ class DocumentRetrievalManagementSystemApplicationTests {
         double similarity = schemeService.similarity(4, 6);
         System.out.println(similarity);
     }*/
+
+    @Test
+    void deleteMaterial() throws Exception {
+        materialService.deleteById(52);
+
+    }
+
+    @Test
+    void deleteDir() throws Exception {
+        schemeService.deleteCategoryFolder("D:\\code\\source\\user\\mhc\\重构测试1\\测试目录1");
+    }
 
     @Test
     void similarity() throws Exception {

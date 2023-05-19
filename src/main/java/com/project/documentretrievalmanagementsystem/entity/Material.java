@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Value;
 import lombok.experimental.Accessors;
 
 /**
@@ -38,12 +39,11 @@ public class Material implements Serializable {
     @ApiModelProperty(value = "资料所属项目的id")
     private Integer projectId;
 
+    @ApiModelProperty(value = "资料在用户空间中的地址")
+    private String locInUser;
+
     @ApiModelProperty(value = "资料地址")
     private String location;
-
-    @ApiModelProperty(value = "资料在用户空间中的地址")
-    @TableField("loc_belong_user")
-    private String loc_in_user;
 
     @ApiModelProperty(value = "所属用户的id")
     private Integer userId;

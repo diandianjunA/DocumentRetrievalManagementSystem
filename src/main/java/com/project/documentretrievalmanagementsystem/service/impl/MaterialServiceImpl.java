@@ -5,6 +5,7 @@ import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.elasticsearch.core.search.TotalHits;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.project.documentretrievalmanagementsystem.common.UserHolder;
@@ -55,6 +56,8 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
     private String modelPath;
     @Value("${my.scriptPath}")
     private String scriptPath;
+    @Value("${my.UserPath}")
+    private String UserPath;
     @Autowired
     ElasticsearchClient elasticsearchClient;
 
@@ -76,7 +79,7 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
 
     //修改可以上传同名资料和相同文件
     @Override
-    public Material addMaterial(String name, Integer projectId, MultipartFile file) throws SameMaterialNameException, SameFileException{
+    public Material addMaterial(String name, Integer projectId, MultipartFile file ,String upperPath) throws SameMaterialNameException, SameFileException{
         //判断该文件是否已经存在，不允许上传同名文件
         LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
         materialLambdaQueryWrapper.eq(Material::getName,name);
@@ -85,7 +88,7 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
         if (material1 != null){
             throw new SameMaterialNameException("文件名字重复，请重新命名");
         }
-    //上传文件
+        //给ES上传文件
         String originalName = fileService.upload(file, basePath);
         if(originalName.equals("文件已存在")){
             throw new SameFileException("文件已存在");
@@ -96,11 +99,24 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
         Integer currentId = UserHolder.getUser().getId();
         material.setUserId(Math.toIntExact(currentId));
         material.setLocation(basePath + originalName);
+
+        //在用户空间中也创建一个文件
+        String userName = UserHolder.getUser().getUserName();
+        String userDir = UserPath+userName+"/";
+        //根据项目id获取项目名称
+        Project project = projectService.getById(projectId);
+        String projectDir = userDir+project.getName();
+        String materialDir = projectDir+upperPath+originalName;
+        //在用户空间中也上传文件
+        fileService.upload(file,projectDir+upperPath);
+        material.setLocInUser(materialDir);
+
         String Location = material.getLocation();
         String LocationT = basePathT + material.getName() + ".txt";
         String vecLocation = basePathT + material.getName() + "vector.txt";
         material.setVectorLocation(vecLocation);
         save(material);     //保存到数据库
+
         Record record = new Record();
         record.setUserId(currentId);
         record.setTime(LocalDateTime.now());
@@ -148,7 +164,8 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
 
     @Override
     public void deleteMaterial(Integer id) {
-        Material material = getById(id);
+        //不使用Mybatis-plus中的方法来通过id来获取资料
+        Material material = materialMapper.selcetById(id);
         //删除资料文件
         delete_vec_txt_file(material, basePathT);
         //删除数据库记录
@@ -227,9 +244,17 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
         }
     }
 
+    //此处删除操作为物理删除，删除数据库记录，删除文件，删除es中的文档
     @Override
     public void deleteById(Integer id) {
         Material material = getById(id);
+        String locInUser = material.getLocInUser();
+        if(!(locInUser==null)){
+            java.io.File file = new java.io.File(locInUser);
+            if(file.exists()){
+                file.delete();
+            }
+        }
         delete_vec_txt_file(material,basePathT);
         try {
             deleteElasticsearchDoc(material);
@@ -326,4 +351,5 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
             return fuzzyQueryDto;
         }
     }
+
 }

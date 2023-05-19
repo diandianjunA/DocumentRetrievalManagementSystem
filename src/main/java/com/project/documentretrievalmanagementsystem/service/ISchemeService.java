@@ -23,6 +23,9 @@ public interface ISchemeService extends IService<Scheme> {
     //数据库中scheme导出excel表格中(导出全部方案)
     XSSFWorkbook downloadExcel(List<Scheme> list);
 
+    //由于在工具类中无法注入bean，所以将该方法放在service中
+    public void deleteCategoryFolder(String Path);
+
     //数据库中scheme导出docx文档中(一个项目对应一个方案)
     //XWPFDocument downloadDocx(Integer projectId);
 

@@ -25,7 +25,7 @@ import java.util.Map;
  * @since 2023-04-14
  */
 public interface IMaterialService extends IService<Material> {
-    Material addMaterial(String name, Integer projectId, MultipartFile file) throws SameMaterialNameException;
+    Material addMaterial(String name, Integer projectId, MultipartFile file, String upperPath) throws SameMaterialNameException;
 
     FuzzyQueryDto fuzzyQuery(EsQueryDto esQueryDto) throws Exception;
 
@@ -41,6 +41,7 @@ public interface IMaterialService extends IService<Material> {
     void deleteElasticsearchDoc(Material material) throws IOException;
 
     void deleteById(Integer id);
+
 
     double similarity(Integer materialIdA, Integer materialIdB) throws IOException;
 

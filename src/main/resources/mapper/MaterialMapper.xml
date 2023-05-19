@@ -8,7 +8,7 @@
         <result column="name" property="name" />
         <result column="project_id" property="projectId" />
         <result column="location" property="location" />
-        <result column="loc_belong_user" property="loc_in_user" />
+        <result column="loc_in_user" property="locInUser" />
         <result column="vector_location" property="vectorLocation" />
     </resultMap>
 

@@ -19,6 +19,7 @@ import com.project.documentretrievalmanagementsystem.service.FileService;
 import com.project.documentretrievalmanagementsystem.service.IMaterialService;
 import com.project.documentretrievalmanagementsystem.service.IProjectService;
 import com.project.documentretrievalmanagementsystem.service.IRecordService;
+import com.project.documentretrievalmanagementsystem.service.impl.SchemeServiceImpl;
 import com.project.documentretrievalmanagementsystem.utils.CreateFolder;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -55,6 +56,8 @@ public class MaterialController {
     @Autowired
     FileService fileService;
     @Autowired
+    SchemeServiceImpl schemeService;
+    @Autowired
     IRecordService recordService;
     @Value("${my.basePathT}")
     private String basePathT;
@@ -63,8 +66,8 @@ public class MaterialController {
 
     @PostMapping("/add")
     @ApiOperation("添加资料")
-    public R<Material> addMaterial(MaterialFileDto materialFileDto) throws SameMaterialNameException , SameFileException {
-        Material material = materialService.addMaterial(materialFileDto.getName(), materialFileDto.getProjectId(), materialFileDto.getFile());
+    public R<Material> addMaterial(MaterialFileDto materialFileDto,@ApiParam("相对路径")String upperPath) throws SameMaterialNameException , SameFileException {
+        Material material = materialService.addMaterial(materialFileDto.getName(), materialFileDto.getProjectId(), materialFileDto.getFile(), upperPath);
         return R.success(material);
     }
 
@@ -198,7 +201,7 @@ public class MaterialController {
     }
 
     //创建资料分类文件夹
-    @GetMapping("/createCategeory")
+    @PostMapping("/createCategeory")
     @ApiOperation("创建资料分类文件夹")
     public R createCategeory(@ApiParam("资料分类文件夹名称") String categoryName,@ApiParam("项目Id") Integer projectId, @ApiParam("上一级目录") String upperPath){
         try {
@@ -212,6 +215,7 @@ public class MaterialController {
                 String projectDir = userDir+project.getName();
                 String categoryDir = projectDir+upperPath;
                 CreateFolder.createCategoryFolder(categoryDir, categoryName);
+                //return R.success(categoryDir);
                 return R.success("创建资料分类文件夹成功");
             }
         } catch (Exception e) {
@@ -221,7 +225,7 @@ public class MaterialController {
 
     //删除资料分类文件夹，同时删除文件夹下的所有文件，包括子文件夹
     //同时删除数据库中的数据
-    @GetMapping("/deleteCategory")
+    @PostMapping("/deleteCategory")
     @ApiOperation("删除资料分类文件夹")
     public R deleteFolder(@ApiParam("项目Id") Integer projectId, @ApiParam("上一级目录") String upperPath, @ApiParam("要删除的文件夹名称") String CategoryName) {
 
@@ -232,8 +236,8 @@ public class MaterialController {
             Project project = projectService.getById(projectId);
             String projectDir = userDir+project.getName();
             String categoryDir = projectDir+upperPath+CategoryName;
-            CreateFolder.deleteCategoryFolder(categoryDir);
             //return R.success(categoryDir);
+            schemeService.deleteCategoryFolder(categoryDir);
             return R.success("删除文件夹成功");
         } catch (Exception e) {
             throw new RuntimeException(e);

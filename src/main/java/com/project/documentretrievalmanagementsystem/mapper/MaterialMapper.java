@@ -22,4 +22,10 @@ public interface MaterialMapper extends BaseMapper<Material> {
     @MapKey("id")
     @Select("select id,name from material")
     Map<Integer, Material> getMaterialMap();
+
+    @Select("select * from material where id = #{id}")
+    Material selcetById(Integer id);
+
+    @Select("select * from material where loc_in_user = #{locInUser}")
+    Material selectByLocInUser(String locInUser);
 }
