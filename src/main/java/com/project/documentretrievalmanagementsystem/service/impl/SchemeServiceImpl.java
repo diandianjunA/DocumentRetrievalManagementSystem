@@ -9,6 +9,7 @@ import com.project.documentretrievalmanagementsystem.service.ISchemeService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.project.documentretrievalmanagementsystem.utils.TransTotxt;
 import org.apache.poi.xssf.usermodel.*;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -103,25 +104,30 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
             row.createCell(0).setCellValue(scheme.getId());
             row.createCell(1).setCellValue(scheme.getName());
             row.createCell(2).setCellValue(scheme.getUserId());
-            row.createCell(3).setCellValue(scheme.getMaterialId());
             row.createCell(4).setCellValue(scheme.getProjectId());
             row.createCell(5).setCellValue(scheme.getSummary());
         }
         return wb;
     }
 
-    @Override
+   /* @Override
+    public XWPFDocument downloadDocx(Integer projectId)
+    {
+
+    }*/
+
+    /*@Override
     public List<Scheme> getSchemeByMaterialId(Integer MaterialId) {
         LambdaQueryWrapper<Scheme> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Scheme::getMaterialId,MaterialId);
         return list(wrapper);
-    }
+    }*/
 
-    @Override
+    /*@Override
     public void deleteByMaterialId(Integer MaterialId) {
         LambdaQueryWrapper<Scheme> schemeLambdaQueryWrapper = new LambdaQueryWrapper<>();
         schemeLambdaQueryWrapper.eq(Scheme::getMaterialId,MaterialId);
         remove(schemeLambdaQueryWrapper);
-    }
+    }*/
 }
 

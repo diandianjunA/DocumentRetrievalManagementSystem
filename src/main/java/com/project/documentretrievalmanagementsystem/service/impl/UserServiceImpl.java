@@ -10,6 +10,7 @@ import com.project.documentretrievalmanagementsystem.mapper.UserMapper;
 import com.project.documentretrievalmanagementsystem.service.IUserService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,6 +40,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
     private UserMapper userMapper;
+    @Value("${my.UserPath}")
+    private String UserPath;
+
     public User login(@RequestBody Map<String,String> map, HttpSession session){
         String userName = map.get("userName");
         String password = map.get("password");
@@ -78,6 +82,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             stringRedisTemplate.opsForHash().putAll(LOGIN_USER_KEY+token,userMap);
             //设置有效期
             stringRedisTemplate.expire(LOGIN_USER_KEY+token,LOGIN_USER_TTL, TimeUnit.MINUTES);
+            //在用户文件夹下创建一个和用户名字同名的文件夹
+            String userDir = UserPath+userName;
+            java.io.File file = new java.io.File(userDir);
+            if(!file.exists()){
+                file.mkdirs();
+            }
             return userDto;
         }else{
             if(user.getStatus()==0){

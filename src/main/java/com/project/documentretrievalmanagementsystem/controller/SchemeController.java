@@ -105,16 +105,6 @@ public class SchemeController {
         if(schemeName!=null&&!schemeName.equals("")){
             schemeLambdaQueryWrapper.or().like(Scheme::getName,schemeName);
         }
-        if(materialId!=null){
-            schemeLambdaQueryWrapper.and(i->i.eq(Scheme::getMaterialId,materialId));
-        }
-        if(materialName!=null&& !materialName.equals("")){
-            LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            materialLambdaQueryWrapper.like(Material::getName,materialName);
-            for (Material material : materialService.list(materialLambdaQueryWrapper)) {
-                schemeLambdaQueryWrapper.or().eq(Scheme::getMaterialId,material.getId());
-            }
-        }
         if(projectId!=null){
             schemeLambdaQueryWrapper.and(i->i.eq(Scheme::getProjectId,projectId));
         }
@@ -134,7 +124,6 @@ public class SchemeController {
         for(Scheme scheme:list){
             SchemeDto schemeDto = new SchemeDto(scheme);
             schemeDto.setProjectName(projectMap.get(scheme.getProjectId()).getName());
-            schemeDto.setMaterialName(materialMap.get(scheme.getMaterialId()).getName());
             schemeDto.setUserName(userMap.get(scheme.getUserId()).getUserName());
             schemeDtos.add(schemeDto);
         }

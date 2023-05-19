@@ -9,12 +9,14 @@ import com.project.documentretrievalmanagementsystem.dto.EsQueryDto;
 import com.project.documentretrievalmanagementsystem.dto.MaterialDto;
 import com.project.documentretrievalmanagementsystem.dto.MaterialFileDto;
 import com.project.documentretrievalmanagementsystem.entity.Material;
+import com.project.documentretrievalmanagementsystem.entity.Project;
 import com.project.documentretrievalmanagementsystem.exception.FileDownloadException;
 import com.project.documentretrievalmanagementsystem.exception.SameFileException;
 import com.project.documentretrievalmanagementsystem.exception.SameMaterialNameException;
 import com.project.documentretrievalmanagementsystem.service.FileService;
 import com.project.documentretrievalmanagementsystem.service.IMaterialService;
 import com.project.documentretrievalmanagementsystem.service.IProjectService;
+import com.project.documentretrievalmanagementsystem.utils.CreateFolder;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -50,6 +52,8 @@ public class MaterialController {
     FileService fileService;
     @Value("${my.basePathT}")
     private String basePathT;
+    @Value("${my.UserPath}")
+    private String UserPath;
 
     @PostMapping("/add")
     @ApiOperation("添加资料")
@@ -173,4 +177,48 @@ public class MaterialController {
             throw new RuntimeException(e);
         }
     }
+
+    //创建资料分类文件夹
+    @GetMapping("/createCategeory")
+    @ApiOperation("创建资料分类文件夹")
+    public R createCategeory(@ApiParam("资料分类文件夹名称") String categoryName,@ApiParam("项目Id") Integer projectId, @ApiParam("上一级目录") String upperPath){
+        try {
+            String userName = UserHolder.getUser().getUserName();
+            String userDir = UserPath+userName+"/";
+            //根据项目id获取项目名称
+            Project project = projectService.getById(projectId);
+            if(project == null){
+                return R.error("项目不存在");
+            }else{
+                String projectDir = userDir+project.getName();
+                String categoryDir = projectDir+upperPath;
+                CreateFolder.createCategoryFolder(categoryDir, categoryName);
+                return R.success("创建资料分类文件夹成功");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    //删除资料分类文件夹，同时删除文件夹下的所有文件，包括子文件夹
+    //同时删除数据库中的数据
+    @GetMapping("/deleteCategory")
+    @ApiOperation("删除资料分类文件夹")
+    public R deleteFolder(@ApiParam("项目Id") Integer projectId, @ApiParam("上一级目录") String upperPath, @ApiParam("要删除的文件夹名称") String CategoryName) {
+
+        try {
+            String userName = UserHolder.getUser().getUserName();
+            String userDir = UserPath+userName+"/";
+            //根据项目id获取项目名称
+            Project project = projectService.getById(projectId);
+            String projectDir = userDir+project.getName();
+            String categoryDir = projectDir+upperPath+CategoryName;
+            CreateFolder.deleteCategoryFolder(categoryDir);
+            //return R.success(categoryDir);
+            return R.success("删除文件夹成功");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

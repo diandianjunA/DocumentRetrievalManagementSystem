@@ -43,6 +43,8 @@ public class ProjectController {
     IMaterialService materialService;
     @Value("${my.basePath}")
     private String basePath;
+    @Value("${my.UserPath}")
+    private String UserPath;
 
     @PostMapping("/add")
     @ApiOperation(value = "添加项目")
@@ -50,7 +52,17 @@ public class ProjectController {
         Integer currentId = UserHolder.getUser().getId();
         project.setUserId(currentId);
         if(projectService.save(project)){
-            return R.success(project);
+            //创建项目目录
+            String userName = UserHolder.getUser().getUserName();
+            String userDir = UserPath+userName+"/";
+            String projectDir = userDir+project.getName();
+            java.io.File file = new java.io.File(projectDir);
+            if(!file.exists()){
+                file.mkdirs();
+                return R.success(project);
+            }else {
+                return R.error("项目已存在");
+            }
         }else{
             return R.error("保存失败");
         }

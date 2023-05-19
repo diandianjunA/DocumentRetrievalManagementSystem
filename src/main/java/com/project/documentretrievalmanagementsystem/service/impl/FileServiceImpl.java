@@ -31,6 +31,7 @@ import java.util.UUID;
 @Service
 public class FileServiceImpl implements FileService {
 
+    //不分类，即不放入文件夹，直接放在项目文件夹下
     @Override
     public String upload(MultipartFile file,String basePath) {
         // 1.获取当前上传的文件名
@@ -58,6 +59,8 @@ public class FileServiceImpl implements FileService {
         // 6.返回数据给前端
         return originalFilename;
     }
+
+    //分类，即放入自己所创建的文件夹下
 
     @Override
     public ResponseEntity<byte[]> download(HttpSession session, String basePath, String fileName) throws IOException {

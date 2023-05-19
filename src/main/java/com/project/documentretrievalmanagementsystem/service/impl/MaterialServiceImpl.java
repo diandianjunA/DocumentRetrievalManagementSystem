@@ -77,7 +77,7 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
         if (material1 != null){
             throw new SameMaterialNameException("文件名字重复，请重新命名");
         }
-//上传文件
+    //上传文件
         String originalName = fileService.upload(file, basePath);
         if(originalName.equals("文件已存在")){
             throw new SameFileException("文件已存在");
@@ -225,7 +225,6 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
             e.printStackTrace();
         }
         removeById(id);
-        schemeService.deleteByMaterialId(id);
     }
 
     @Override

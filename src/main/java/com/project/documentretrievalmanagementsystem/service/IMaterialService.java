@@ -42,4 +42,5 @@ public interface IMaterialService extends IService<Material> {
     void deleteById(Integer id);
 
     double similarity(Integer materialIdA, Integer materialIdB) throws IOException;
+
 }

@@ -8,14 +8,12 @@ import lombok.EqualsAndHashCode;
 @Data
 public class SchemeDto extends Scheme {
     private String projectName;
-    private String materialName;
     private String userName;
 
     public SchemeDto(Scheme scheme){
         this.setId(scheme.getId());
         this.setName(scheme.getName());
         this.setProjectId(scheme.getProjectId());
-        this.setMaterialId(scheme.getMaterialId());
         this.setUserId(scheme.getUserId());
         this.setSummary(scheme.getSummary());
     }
