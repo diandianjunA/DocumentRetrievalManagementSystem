@@ -82,7 +82,11 @@ class DocumentRetrievalManagementSystemApplicationTests {
         System.out.println(summary);
     }
 
-
+   /* @Test
+    void downloadDocx() {
+        String Name = schemeService.downloadDocx(14);
+        System.out.println(Name);
+    }*/
 
    /* @Test
     void similarity() throws Exception {

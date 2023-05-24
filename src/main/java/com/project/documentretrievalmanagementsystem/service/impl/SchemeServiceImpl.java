@@ -1,6 +1,7 @@
 package com.project.documentretrievalmanagementsystem.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.project.documentretrievalmanagementsystem.entity.Material;
+import com.project.documentretrievalmanagementsystem.entity.Project;
 import com.project.documentretrievalmanagementsystem.entity.Scheme;
 import com.project.documentretrievalmanagementsystem.mapper.MaterialMapper;
 import com.project.documentretrievalmanagementsystem.mapper.SchemeMapper;
@@ -10,7 +11,7 @@ import com.project.documentretrievalmanagementsystem.service.ISchemeService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.project.documentretrievalmanagementsystem.utils.TransTotxt;
 import org.apache.poi.xssf.usermodel.*;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -34,6 +35,10 @@ import java.util.List;
 public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> implements ISchemeService {
     @Autowired
     FileService fileService;
+    @Autowired
+    ProjectServiceImpl projectService;
+    @Autowired
+    SchemeMapper schemeMapper;
     @Lazy
     @Autowired
     IMaterialService materialService;
@@ -83,6 +88,7 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
         return result;
     }
 
+    //导出格式为Excel
     @Override
     public XSSFWorkbook downloadExcel(List<Scheme> list) {
         //定义Excel表格
@@ -113,6 +119,38 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
             row.createCell(5).setCellValue(scheme.getSummary());
         }
         return wb;
+    }
+
+
+    //导出格式为Docx
+    @Override
+    public XWPFDocument downloadDocx(Integer projectId){
+        XWPFDocument docx = new XWPFDocument();
+        //根据projectId取得该项目
+        Project project = projectService.getById(projectId);
+        String projectName = project.getName();
+        //获得projectId为projectId的方案
+        LambdaQueryWrapper<Scheme> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Scheme::getProjectId, projectId);
+        List<Scheme> schemeList = schemeMapper.selectList(queryWrapper);
+        if (schemeList.isEmpty()) {
+            return null;
+        }
+        Scheme scheme = schemeList.get(0);
+        String summary = scheme.getSummary();
+        //将项目名作为标题
+        XWPFParagraph title = docx.createParagraph();
+        title.setAlignment(ParagraphAlignment.CENTER);
+        XWPFRun titleRun = title.createRun();
+        titleRun.setText(projectName);
+        titleRun.setBold(true);
+        //将摘要作为正文
+        XWPFParagraph body = docx.createParagraph();
+        body.setAlignment(ParagraphAlignment.LEFT);
+        XWPFRun bodyRun = body.createRun();
+        bodyRun.setText(summary);
+        bodyRun.setBold(false);
+        return docx;
     }
 
     //删除资料分类文件夹

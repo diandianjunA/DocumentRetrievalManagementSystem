@@ -27,7 +27,7 @@ public interface ISchemeService extends IService<Scheme> {
     public void deleteCategoryFolder(String Path);
 
     //数据库中scheme导出docx文档中(一个项目对应一个方案)
-    //XWPFDocument downloadDocx(Integer projectId);
+    XWPFDocument downloadDocx(Integer projectId);
 
     //List<Scheme> getSchemeByMaterialId(Integer MaterialId);
 

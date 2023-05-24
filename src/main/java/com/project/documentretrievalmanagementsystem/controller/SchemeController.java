@@ -19,6 +19,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -87,7 +88,7 @@ public class SchemeController {
 
     //数据库中scheme导出excel表格中
     @GetMapping("/download")
-    @ApiOperation("导出方案")
+    @ApiOperation("导出excel方案")
     public void downloadExcel(Integer projectId,HttpServletResponse response) throws IOException {
         LambdaQueryWrapper<Scheme> schemeLambdaQueryWrapper = new LambdaQueryWrapper<>();
         schemeLambdaQueryWrapper.eq(Scheme::getProjectId,projectId);
@@ -102,6 +103,21 @@ public class SchemeController {
         response.setContentType("application/octet-stream;charset=UTF-8");
         response.setHeader("Content-Disposition", "attachment; filename="+URLEncoder.encode(fileName,"UTF-8").replaceAll("\\+", "%20"));
         wb.write(output);
+        output.close();
+    }
+
+    //数据库中scheme导出Docx文档中
+    @GetMapping("/downloadDocx")
+    @ApiOperation("导出docx方案")
+    public void downloadDocx(Integer projectId,HttpServletResponse response) throws IOException {
+        XWPFDocument docx = schemeService.downloadDocx(projectId);
+        OutputStream output = response.getOutputStream();
+        // 文件名中文形式
+        String fileName = "方案-" + new SimpleDateFormat("yyyyMMdd_HHmmssSSS").format(new Date()) + ".docx";
+        //fileName = new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
+        response.setContentType("application/octet-stream;charset=UTF-8");
+        response.setHeader("Content-Disposition", "attachment; filename="+URLEncoder.encode(fileName,"UTF-8").replaceAll("\\+", "%20"));
+        docx.write(output);
         output.close();
     }
 
