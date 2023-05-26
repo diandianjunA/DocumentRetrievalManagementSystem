@@ -65,8 +65,17 @@ public class SchemeController {
     //方案生成
     @GetMapping("/generate")
     @ApiOperation("生成方案")
-    public R<String> generateSummary(@RequestParam("materialId") Integer materialId,Integer length){
+    public R<String> generateSummary(@RequestParam("materialId") Integer materialId, @RequestParam("length") Integer length){
         String result = schemeService.generateSummary(materialId,length);
+        result=result.substring(2,result.length()-2).replace(" ","");
+        return R.success(result);
+    }
+
+    //多文本方案生成
+    @GetMapping("/generateMulti")
+    @ApiOperation("生成多文本方案")
+    public R<String> generateMultiSummary(@RequestParam("materialIds") List<Integer> materialIdList, @RequestParam("length") Integer length) throws IOException {
+        String result = schemeService.generateMultiSummary(materialIdList,length);
         result=result.substring(2,result.length()-2).replace(" ","");
         return R.success(result);
     }

@@ -9,6 +9,7 @@ import com.project.documentretrievalmanagementsystem.service.FileService;
 import com.project.documentretrievalmanagementsystem.service.IMaterialService;
 import com.project.documentretrievalmanagementsystem.service.ISchemeService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.project.documentretrievalmanagementsystem.utils.FileRdWt;
 import com.project.documentretrievalmanagementsystem.utils.TransTotxt;
 import org.apache.poi.xssf.usermodel.*;
 import org.apache.poi.xwpf.usermodel.*;
@@ -72,6 +73,7 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
                     .exec(pythonPath+" " +
                             scriptPath+"/predict.py " +
                             "--model_path "+modelPath+" " +
+                            "--file_type " + 0 + " " +
                             "--file_path "+Path+" " +
                             "--sum_min_len "+length);
 
@@ -87,6 +89,51 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
         }
         return result;
     }
+
+
+    @Override
+    //调用python脚本生成资料摘要
+    //方案生成
+    public String generateMultiSummary(List<Integer> materialIdList, Integer length) throws IOException {
+        //在bathT下创建名为MaterialList的txt文件
+        String MaterialList = basePathT + "MaterialList.txt";
+        //遍历资料id列表
+        for (Integer materialId : materialIdList) {
+            //获取资料
+            Material material = materialService.getById(materialId);
+            //获取资料txt格式的地址
+            String txtLocation = material.getTxtLocation();
+            //将资料txt地址以逐行追加的方式写入MaterialList.txt文件中
+            FileRdWt.writeTxt(MaterialList, txtLocation);
+        }
+
+        String result = "";
+        try {
+            //开启了命令执行器，输入指令执行python脚本
+            Process process = Runtime.getRuntime()
+                    .exec(pythonPath + " " +
+                            scriptPath + "/predict.py " +
+                            "--model_path " + modelPath + " " +
+                            "--file_type " + 1 + " " +
+                            "--file_path " + MaterialList + " " +
+                            "--sum_min_len " + length);
+
+            //这种方式获取返回值的方式是需要用python打印输出，然后java去获取命令行的输出，在java返回
+            InputStreamReader ir = new InputStreamReader(process.getInputStream(), "GB2312");
+            LineNumberReader input = new LineNumberReader(ir);
+            //读取命令行的输出
+            result = input.readLine();
+            input.close();
+            ir.close();
+        } catch (IOException e) {
+            System.out.println("调用python脚本并读取结果时出错：" + e.getMessage());
+        }
+        //删除MaterialList.txt文件
+        File file = new File(MaterialList);
+        file.delete();
+        return result;
+    }
+
 
     //导出格式为Excel
     @Override

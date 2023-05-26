@@ -6,6 +6,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.xwpf.*;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -18,7 +19,10 @@ import java.util.List;
  */
 public interface ISchemeService extends IService<Scheme> {
     //调用python脚本生成资料摘要(方案生成)
-    public String generateSummary(Integer materialId, Integer length);
+    public String generateSummary(Integer MaterialId, Integer length);
+
+    //调用python脚本生成多文本资料摘要
+    public String generateMultiSummary(List<Integer> MaterialIdList, Integer length) throws IOException;
 
     //数据库中scheme导出excel表格中(导出全部方案)
     XSSFWorkbook downloadExcel(List<Scheme> list);

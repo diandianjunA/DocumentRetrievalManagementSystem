@@ -9,6 +9,7 @@
         <result column="project_id" property="projectId" />
         <result column="location" property="location" />
         <result column="loc_in_user" property="locInUser" />
+        <result column="txt_location" property="txtLocation" />
         <result column="vector_location" property="vectorLocation" />
     </resultMap>
 

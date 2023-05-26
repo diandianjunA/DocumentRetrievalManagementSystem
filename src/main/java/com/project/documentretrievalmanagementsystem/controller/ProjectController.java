@@ -179,4 +179,6 @@ public class ProjectController {
         SimilarityDto analysis = projectService.similarityAnalyze(project1Id,project2Id);
         return R.success(analysis);
     }
+
+
 }

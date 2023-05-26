@@ -48,6 +48,9 @@ public class Material implements Serializable {
     @ApiModelProperty(value = "所属用户的id")
     private Integer userId;
 
+    @ApiModelProperty(value = "资料txt格式所在地址")
+    private String txtLocation;
+
     @ApiModelProperty(value = "资料向量所在的地址")
     private String vectorLocation;
 }

@@ -48,8 +48,10 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
     FileService fileService;
     @Value("${my.basePath}")
     private String basePath;
-    @Value("${my.basePathT}")
-    private String basePathT;
+    @Value("${my.basePathMaterial}")
+    private String basePathMaterial;
+    @Value("${my.basePathVector}")
+    private String basePathVector;
     @Value("${my.pythonPath}")
     private String pythonPath;
     @Value("${my.modelPath}")
@@ -112,8 +114,9 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
         material.setLocInUser(materialDir);
 
         String Location = material.getLocation();
-        String LocationT = basePathT + material.getName() + ".txt";
-        String vecLocation = basePathT + material.getName() + "vector.txt";
+        String LocationT = basePathMaterial + material.getName() + ".txt";
+        String vecLocation = basePathVector + material.getName() + "vector.txt";
+        material.setTxtLocation(LocationT);
         material.setVectorLocation(vecLocation);
         save(material);     //保存到数据库
 
@@ -167,7 +170,7 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
         //不使用Mybatis-plus中的方法来通过id来获取资料
         Material material = materialMapper.selcetById(id);
         //删除资料文件
-        delete_vec_txt_file(material, basePathT);
+        delete_vec_txt_file(material, basePathVector);
         //删除数据库记录
         removeById(id);
     }
@@ -255,7 +258,7 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
                 file.delete();
             }
         }
-        delete_vec_txt_file(material,basePathT);
+        delete_vec_txt_file(material,basePathVector);
         try {
             deleteElasticsearchDoc(material);
         } catch (IOException e) {

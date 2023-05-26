@@ -14,6 +14,7 @@ import com.project.documentretrievalmanagementsystem.service.ISchemeService;
 import com.project.documentretrievalmanagementsystem.service.impl.ProjectServiceImpl;
 import com.project.documentretrievalmanagementsystem.service.impl.SchemeServiceImpl;
 import com.project.documentretrievalmanagementsystem.utils.CreateFolder;
+import com.project.documentretrievalmanagementsystem.utils.FileRdWt;
 import io.github.swagger2markup.Swagger2MarkupConfig;
 import io.github.swagger2markup.Swagger2MarkupConverter;
 import io.github.swagger2markup.builder.Swagger2MarkupConfigBuilder;
@@ -27,6 +28,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
@@ -93,6 +95,11 @@ class DocumentRetrievalManagementSystemApplicationTests {
         double similarity = schemeService.similarity(4, 6);
         System.out.println(similarity);
     }*/
+
+    @Test
+    void TestWriteTxt() throws IOException {
+        FileRdWt.writeTxt("D:\\code\\source\\txt\\MaterialList.txt","测试写入");
+    }
 
     @Test
     void deleteMaterial() throws Exception {
