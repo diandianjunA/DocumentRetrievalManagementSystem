@@ -41,9 +41,9 @@ class DocumentRetrievalManagementSystemApplicationTests {
     @Autowired
     private UserMapper userMapper;
     @Autowired
-    IMaterialService materialService;
+    private MaterialMapper materialMapper;
     @Autowired
-    MaterialMapper materialMapper;
+    IMaterialService materialService;
     @Autowired
     SchemeServiceImpl schemeService;
     @Autowired
@@ -124,5 +124,24 @@ class DocumentRetrievalManagementSystemApplicationTests {
         for (ProjectDto projectDto : projectDtos) {
             System.out.println(projectDto);
         }
+    }
+
+    @Test
+    public void materialTest(){
+        Material material1 = materialMapper.selectById(11);
+        Material material2 = materialMapper.selectByPrimaryKey(11);
+        Material material3 = materialMapper.getByPrimaryKey(11);
+        System.out.println(material1);
+        System.out.println(material2);
+        System.out.println(material3);
+    }
+
+    @Test
+    public void materialTest2(){
+        Material material = new Material();
+        material.setId(22);
+        material.setName("test");
+        material.setLocInUser("test");
+        materialMapper.insert(material);
     }
 }

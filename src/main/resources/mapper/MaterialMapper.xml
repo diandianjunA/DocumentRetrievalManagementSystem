@@ -8,9 +8,34 @@
         <result column="name" property="name" />
         <result column="project_id" property="projectId" />
         <result column="location" property="location" />
+        <result column="user_id" property="userId" />
         <result column="loc_in_user" property="locInUser" />
         <result column="txt_location" property="txtLocation" />
         <result column="vector_location" property="vectorLocation" />
     </resultMap>
 
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+        select
+        id,
+        name,
+        project_id,
+        location,
+        loc_belong_user,
+        vector_location,
+        user_id
+        from material
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+<!--    <select id="selectByPrimaryKey" resultType="com.project.documentretrievalmanagementsystem.entity.Material">-->
+<!--        select-->
+<!--            id,-->
+<!--            name,-->
+<!--            project_id,-->
+<!--            location,-->
+<!--            loc_belong_user as loc_in_user,-->
+<!--            vector_location,-->
+<!--            user_id-->
+<!--        from material-->
+<!--        where id = #{id,jdbcType=INTEGER}-->
+<!--    </select>-->
 </mapper>

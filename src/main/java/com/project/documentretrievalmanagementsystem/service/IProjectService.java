@@ -1,5 +1,6 @@
 package com.project.documentretrievalmanagementsystem.service;
 
+import com.project.documentretrievalmanagementsystem.dto.AnalyzeDto;
 import com.project.documentretrievalmanagementsystem.dto.ProjectDto;
 import com.project.documentretrievalmanagementsystem.dto.SimilarityDto;
 import com.project.documentretrievalmanagementsystem.entity.Project;
@@ -27,6 +28,8 @@ public interface IProjectService extends IService<Project> {
     public List<ProjectDto> projectAnalyze(Integer projectId) throws IOException;
 
     SimilarityDto similarityAnalyze(Integer project1Id, Integer project2Id) throws IOException;
+
+    AnalyzeDto projectAnalyze(Integer projectId, Integer pageNum, Integer pageSize, Integer navSize) throws IOException;
 }
 
 

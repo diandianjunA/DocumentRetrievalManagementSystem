@@ -3,6 +3,7 @@ package com.project.documentretrievalmanagementsystem.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.project.documentretrievalmanagementsystem.common.UserHolder;
+import com.project.documentretrievalmanagementsystem.dto.AnalyzeDto;
 import com.project.documentretrievalmanagementsystem.dto.MaterialSimilarityDto;
 import com.project.documentretrievalmanagementsystem.dto.ProjectDto;
 import com.project.documentretrievalmanagementsystem.dto.SimilarityDto;
@@ -233,5 +234,67 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
         similarityDto.setList1(materialSimilarityDtos1);
         similarityDto.setList2(materialSimilarityDtos2);
         return similarityDto;
+    }
+
+    @Override
+    public AnalyzeDto projectAnalyze(Integer projectId, Integer pageNum, Integer pageSize, Integer navSize) throws IOException {
+        //获取项目map
+        Map<Integer, Project> projectMap = projectMapper.getProjectMap();
+        Integer id = UserHolder.getUser().getId();
+        //获取项目id为projectId的项目
+        Project project = projectMap.get(projectId);
+        List<ProjectDto> projectDtoList = new ArrayList<>();
+        for (Map.Entry<Integer, Project> entry : projectMap.entrySet()) {
+            //确保项目是当前用户线程下的用户所拥有
+            if(!Objects.equals(entry.getValue().getUserId(), id)){
+                continue;
+            }
+            if (!Objects.equals(entry.getKey(), projectId)) {
+                //获取项目id为entry.getKey()的项目
+                Project projectT = projectMap.get(entry.getKey());
+                ProjectDto projectDto = new ProjectDto();
+                //获取信息和相似度
+                projectDto.setId(projectT.getId());
+                projectDto.setName(projectT.getName());
+                projectDto.setCategory(projectT.getCategory());
+                projectDto.setRemark(projectT.getRemark());
+                projectDto.setSimilarity(similarity(projectId, entry.getKey()));
+                projectDtoList.add(projectDto);
+            }
+        }
+        //对list进行排序
+        Collections.sort(projectDtoList, new Comparator<ProjectDto>() {
+            @Override
+            public int compare(ProjectDto o1, ProjectDto o2) {
+                //降序
+                if (o1.getSimilarity() < o2.getSimilarity()) {
+                    return 1;
+                }
+                if (o1.getSimilarity() == o2.getSimilarity()) {
+                    return 0;
+                }
+                return -1;
+            }
+        });
+        AnalyzeDto analyzeDto = new AnalyzeDto();
+        analyzeDto.setTotal(projectDtoList.size());
+        analyzeDto.setPageSize(pageSize);
+        analyzeDto.setPageNum(pageNum);
+        int from=(pageNum-1)*pageSize;
+        int end=from+pageSize;
+        int pages=projectDtoList.size()/pageSize;
+        analyzeDto.setPages(pages);
+        if(from>=projectDtoList.size()){
+            analyzeDto.setList(new ArrayList<>());
+        }else if(end>=projectDtoList.size()){
+            analyzeDto.setList(projectDtoList.subList(from,projectDtoList.size()));
+        }else{
+            analyzeDto.setList(projectDtoList.subList(from,end));
+        }
+        analyzeDto.setFirstPage(pageNum==1);
+        analyzeDto.setLastPage(end>=projectDtoList.size());
+        analyzeDto.setHasNextPage(!analyzeDto.isLastPage());
+        analyzeDto.setHasPreviousPage(!analyzeDto.isFirstPage());
+        return analyzeDto;
     }
 }

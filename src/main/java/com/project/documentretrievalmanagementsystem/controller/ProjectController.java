@@ -6,6 +6,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.project.documentretrievalmanagementsystem.common.R;
 import com.project.documentretrievalmanagementsystem.common.UserHolder;
+import com.project.documentretrievalmanagementsystem.dto.AnalyzeDto;
 import com.project.documentretrievalmanagementsystem.dto.ProjectDto;
 import com.project.documentretrievalmanagementsystem.dto.SimilarityDto;
 import com.project.documentretrievalmanagementsystem.entity.Material;
@@ -167,9 +168,9 @@ public class ProjectController {
     }
 
     @GetMapping("/analyze")
-    @ApiOperation("项目分析")
-    public R<List<ProjectDto>> analyze(@ApiParam("项目id") Integer projectId) throws IOException {
-        List<ProjectDto> analysis = projectService.projectAnalyze(projectId);
+    @ApiOperation("项目分析-分页版本")
+    public R<AnalyzeDto> analyze(@ApiParam("项目id") Integer projectId, @ApiParam("页面大小") Integer pageSize, @ApiParam("第几页") Integer pageNum, @ApiParam("导航页显示几个") Integer navSize) throws IOException {
+        AnalyzeDto analysis = projectService.projectAnalyze(projectId,pageNum,pageSize,navSize);
         return R.success(analysis);
     }
 

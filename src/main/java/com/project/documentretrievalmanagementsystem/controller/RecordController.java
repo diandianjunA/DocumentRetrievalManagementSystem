@@ -11,6 +11,7 @@ import com.project.documentretrievalmanagementsystem.service.IRecordService;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -30,6 +31,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/record")
+@CrossOrigin
 public class RecordController {
 
     @Autowired
