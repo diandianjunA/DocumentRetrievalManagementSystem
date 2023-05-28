@@ -128,9 +128,14 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
             LambdaQueryWrapper<Scheme> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(Scheme::getProjectId, projectId);
             Scheme scheme = schemeMapper.selectOne(queryWrapper);
-            String ProjectName = basePathT + projectName + ".txt";
-            FileRdWt.writeTxt(ProjectName, scheme.getSummary());
-            FileRdWt.writeTxt(MaterialList, ProjectName);
+            //判断方案是否为空
+            if (scheme == null) {
+                continue;
+            }else {
+                String ProjectName = basePathT + projectName + ".txt";
+                FileRdWt.writeTxt(ProjectName, scheme.getSummary());
+                FileRdWt.writeTxt(MaterialList, ProjectName);
+            }
         }
 
         String result = "";
