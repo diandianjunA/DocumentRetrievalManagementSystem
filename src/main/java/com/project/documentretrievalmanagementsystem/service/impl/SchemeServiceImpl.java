@@ -94,17 +94,43 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
     @Override
     //调用python脚本生成资料摘要
     //方案生成
-    public String generateMultiSummary(List<Integer> materialIdList, Integer length) throws IOException {
+    public String generateMultiSummary(String materialIds, String ProjectIds, Integer length) throws IOException {
+        materialIds = materialIds.substring(1, materialIds.length() - 1);
+        ProjectIds = ProjectIds.substring(1, ProjectIds.length() - 1);
+        String[] materialIdList = materialIds.split(",");
+        String[] projectIdList = ProjectIds.split(",");
+        //转为int类型
+        Integer[] materialIdListInt = new Integer[materialIdList.length];
+        Integer[] projectIdListInt = new Integer[projectIdList.length];
+        for (int i = 0; i < materialIdList.length; i++) {
+            materialIdListInt[i] = Integer.parseInt(materialIdList[i]);
+        }
+        for (int i = 0; i < projectIdList.length; i++) {
+            projectIdListInt[i] = Integer.parseInt(projectIdList[i]);
+        }
         //在bathT下创建名为MaterialList的txt文件
         String MaterialList = basePathT + "MaterialList.txt";
         //遍历资料id列表
-        for (Integer materialId : materialIdList) {
+        for (Integer materialId : materialIdListInt) {
             //获取资料
             Material material = materialService.getById(materialId);
             //获取资料txt格式的地址
             String txtLocation = material.getTxtLocation();
             //将资料txt地址以逐行追加的方式写入MaterialList.txt文件中
             FileRdWt.writeTxt(MaterialList, txtLocation);
+        }
+        //遍历项目id列表
+        for(Integer projectId : projectIdListInt) {
+            //获取项目名字
+            Project project = projectService.getById(projectId);
+            String projectName = project.getName();
+            //获取projectId为projectId的方案scheme
+            LambdaQueryWrapper<Scheme> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(Scheme::getProjectId, projectId);
+            Scheme scheme = schemeMapper.selectOne(queryWrapper);
+            String ProjectName = basePathT + projectName + ".txt";
+            FileRdWt.writeTxt(ProjectName, scheme.getSummary());
+            FileRdWt.writeTxt(MaterialList, ProjectName);
         }
 
         String result = "";
@@ -131,6 +157,15 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
         //删除MaterialList.txt文件
         File file = new File(MaterialList);
         file.delete();
+        //删除项目名字.txt文件
+        for(Integer projectId : projectIdListInt) {
+            //获取项目名字
+            Project project = projectService.getById(projectId);
+            String projectName = project.getName();
+            String ProjectName = basePathT + projectName + ".txt";
+            File file1 = new File(ProjectName);
+            file1.delete();
+        }
         return result;
     }
 
