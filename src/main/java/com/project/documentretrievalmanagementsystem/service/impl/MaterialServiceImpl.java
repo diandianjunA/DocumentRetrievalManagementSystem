@@ -291,6 +291,77 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
     }
 
     @Override
+    public FuzzyQueryDto fuzzyQueryCategory(EsQueryDto esQueryDto, String category) throws IOException {
+        esQueryDto.setIndex("resumes");
+        esQueryDto.setField("content");
+        SearchResponse<HashMap> search;
+        if(!Objects.equals(esQueryDto.getWord(), "")){
+            search = elasticsearchClient.search(s -> s
+                    .index(esQueryDto.getIndex()).highlight(h -> h.fields(esQueryDto.getField(), f -> f.preTags("<span style='color:red'>").postTags("</span>").fragmentSize(100)))
+                    .query(q -> q.match(t->t.field(esQueryDto.getField()).query(esQueryDto.getWord()))).from(esQueryDto.getFrom()).size(esQueryDto.getSize()), HashMap.class);
+            List<Hit<HashMap>> hits = search.hits().hits();
+            ArrayList<MaterialDto> res = new ArrayList<>();
+            Map<Integer, User> userMap = userService.getUserMap();
+            for (Hit<HashMap> hit:hits){
+                HashMap source = hit.source();
+                HashMap file = (HashMap) source.get("file");
+                String location = (String) file.get("url");
+                location=location.substring(7);
+                LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                materialLambdaQueryWrapper.eq(Material::getLocation,location);
+                List<Material> list = list(materialLambdaQueryWrapper);
+                MaterialDto materialDto = new MaterialDto(list.get(0));
+                Project project = projectService.getById(materialDto.getProjectId());
+                if(!Objects.equals(project.getCategory(), category)){
+                    continue;
+                }
+                materialDto.setProjectName(project.getName());
+                materialDto.setCategory(project.getCategory());
+                materialDto.setUserName(userMap.get(materialDto.getUserId()).getUserName());
+                String content = hit.highlight().get(esQueryDto.getField()).get(0);
+                materialDto.setContent(content);
+                res.add(materialDto);
+            }
+            FuzzyQueryDto fuzzyQueryDto = new FuzzyQueryDto();
+            fuzzyQueryDto.setTotal((int)search.hits().total().value());
+            fuzzyQueryDto.setList(res);
+            return fuzzyQueryDto;
+        }else{
+            search = elasticsearchClient.search(s -> s
+                    .index(esQueryDto.getIndex()).highlight(h -> h.fields(esQueryDto.getField(),f -> f.preTags("<span style='color:red'>").postTags("</span>").fragmentSize(100)))
+                    .from(esQueryDto.getFrom()).size(esQueryDto.getSize()), HashMap.class);
+            List<Hit<HashMap>> hits = search.hits().hits();
+            ArrayList<MaterialDto> res = new ArrayList<>();
+            Map<Integer, User> userMap = userService.getUserMap();
+            for (Hit<HashMap> hit:hits){
+                HashMap source = hit.source();
+                HashMap file = (HashMap) source.get("file");
+                String location = (String) file.get("url");
+                location=location.substring(7);
+                LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                materialLambdaQueryWrapper.eq(Material::getLocation,location);
+                List<Material> list = list(materialLambdaQueryWrapper);
+                MaterialDto materialDto = new MaterialDto(list.get(0));
+                Project project = projectService.getById(materialDto.getProjectId());
+                if(!Objects.equals(project.getCategory(), category)){
+                    continue;
+                }
+                materialDto.setProjectName(project.getName());
+                materialDto.setCategory(project.getCategory());
+                materialDto.setUserName(userMap.get(materialDto.getUserId()).getUserName());
+                String content = (String) source.get("content");
+                content=content.substring(0,Math.min(content.length(),100));
+                materialDto.setContent(content);
+                res.add(materialDto);
+            }
+            FuzzyQueryDto fuzzyQueryDto = new FuzzyQueryDto();
+            fuzzyQueryDto.setTotal((int)search.hits().total().value());
+            fuzzyQueryDto.setList(res);
+            return fuzzyQueryDto;
+        }
+    }
+
+    @Override
     public FuzzyQueryDto fuzzyQuery(EsQueryDto esQueryDto) throws Exception {
         esQueryDto.setIndex("resumes");
         esQueryDto.setField("content");
@@ -354,5 +425,4 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
             return fuzzyQueryDto;
         }
     }
-
 }

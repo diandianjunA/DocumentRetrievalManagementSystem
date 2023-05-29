@@ -74,7 +74,7 @@ public class SchemeController {
     //多文本方案生成
     @GetMapping("/generateMulti")
     @ApiOperation("生成多文本方案")
-    public R<String> generateMultiSummary(@RequestParam("materialIds") String materialIds,  @RequestParam("ProjectIds") String ProjectIds, @RequestParam("length") Integer length) throws IOException {
+    public R<String> generateMultiSummary(@RequestParam("materialIds") String materialIds,  @RequestParam("projectIds") String ProjectIds, @RequestParam("length") Integer length) throws IOException {
         String result = schemeService.generateMultiSummary(materialIds, ProjectIds, length);
         result=result.substring(2,result.length()-2).replace(" ","");
         return R.success(result);

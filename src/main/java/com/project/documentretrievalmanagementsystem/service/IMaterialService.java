@@ -45,4 +45,5 @@ public interface IMaterialService extends IService<Material> {
 
     double similarity(Integer materialIdA, Integer materialIdB) throws IOException;
 
+    FuzzyQueryDto fuzzyQueryCategory(EsQueryDto esQueryDto, String category) throws IOException;
 }
