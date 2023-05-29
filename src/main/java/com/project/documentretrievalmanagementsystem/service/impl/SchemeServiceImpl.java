@@ -252,9 +252,12 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
                 queryWrapper.eq(Material::getLocInUser, PathC);
                 // 执行查询操作，取出符合条件的实体列表
                 List<Material> materialList = materialMapper.selectList(queryWrapper);
-                Material material = materialList.get(0);
-                //删除数据库，文件夹，elasticsearch中的资料
-                materialService.deleteById(material.getId());
+                //判断是否有符合条件的实体
+                if (!materialList.isEmpty()) {
+                    Material material = materialList.get(0);
+                    //删除数据库，文件夹，elasticsearch中的资料
+                    materialService.deleteById(material.getId());
+                }
                 file.delete();
 
             } else if (file.isDirectory()) {
@@ -262,7 +265,7 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
                 String[] list = file.list();
                 for (String s : list) {
                     //递归删除目录下的文件
-                    deleteCategoryFolder(Path + "\\" + s);
+                    deleteCategoryFolder(Path + "/" + s);
                 }
                 //删除目录
                 file.delete();

@@ -265,6 +265,32 @@ public class MaterialController {
         }
     }
 
+    //批量删除资料分类文件夹，同时删除文件夹下的所有文件，包括子文件夹
+    //同时删除数据库中的数据
+    @PostMapping("/deleteCategoryList")
+    @ApiOperation("批量删除资料分类文件夹")
+    public R deleteFolderList(@ApiParam("项目Id") Integer projectId, @ApiParam("上一级目录") String upperPath, @ApiParam("要删除的文件夹名称") String CategoryNames) {
+        try {
+            String userName = UserHolder.getUser().getUserName();
+            String userDir = UserPath+userName+"/";
+            //根据项目id获取项目名称
+            Project project = projectService.getById(projectId);
+            String projectDir = userDir+project.getName();
+            String categoryDir = projectDir+upperPath;
+
+            CategoryNames = CategoryNames.substring(1,CategoryNames.length()-1);
+            String[] split = CategoryNames.split(",");
+            for (int i = 0; i < split.length; i++) {
+                String categoryName = split[i];
+                String categoryDir1 = categoryDir+categoryName;
+                schemeService.deleteCategoryFolder(categoryDir1);
+            }
+            return R.success("批量删除文件夹成功");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     //获取该分类文件夹下的资料和文件夹
     @GetMapping("/getFromCategory")
     @ApiOperation("获取该分类文件夹下的资料和文件夹")
