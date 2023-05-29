@@ -82,9 +82,10 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
 
     //修改可以上传同名资料和相同文件
     @Override
-    public Material addMaterial(String name, Integer projectId, MultipartFile file ,String upperPath) throws SameMaterialNameException {
+    public Material addMaterial(Integer projectId, MultipartFile file ,String upperPath) throws SameMaterialNameException {
         //判断该文件是否已经存在，不允许上传同名文件
         LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        String name = file.getOriginalFilename().substring(0, file.getOriginalFilename().lastIndexOf("."));
         materialLambdaQueryWrapper.eq(Material::getName,name);
         materialLambdaQueryWrapper.eq(Material::getProjectId,projectId);
         Material material1 = getOne(materialLambdaQueryWrapper);
@@ -382,6 +383,9 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
                 LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
                 materialLambdaQueryWrapper.eq(Material::getLocation,location);
                 List<Material> list = list(materialLambdaQueryWrapper);
+                if(list.isEmpty()){
+                    continue;
+                }
                 MaterialDto materialDto = new MaterialDto(list.get(0));
                 Project project = projectService.getById(materialDto.getProjectId());
                 materialDto.setProjectName(project.getName());
@@ -410,6 +414,9 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
                 LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
                 materialLambdaQueryWrapper.eq(Material::getLocation,location);
                 List<Material> list = list(materialLambdaQueryWrapper);
+                if(list.isEmpty()){
+                    continue;
+                }
                 MaterialDto materialDto = new MaterialDto(list.get(0));
                 Project project = projectService.getById(materialDto.getProjectId());
                 materialDto.setProjectName(project.getName());
@@ -440,8 +447,9 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
         List<CategoryDto> categoryDtoList = new ArrayList<>();
         //文件夹
         for (int i = 0; i < files.length; i++) {
+            long lastModified = files[i].lastModified();
             if (files[i].isDirectory()) {
-                CategoryDto categoryDto = new CategoryDto("Dir", names[i]);
+                CategoryDto categoryDto = new CategoryDto("Dir", names[i], lastModified);
                 categoryDtoList.add(categoryDto);
             }else{
                 //判断name[i]是否为空
@@ -450,7 +458,6 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
                 }
                 names[i] = names[i].substring(0, names[i].lastIndexOf("."));
                 String name = names[i];
-                System.out.println(name);
                 //根据文件名查找数据库
                 LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
                 materialLambdaQueryWrapper.eq(Material::getName, name);
@@ -460,7 +467,7 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
                 }
                 Material material = list.get(0);
                 Integer Id = material.getId();
-                CategoryDto categoryDto = new CategoryDto("File", names[i], Id);
+                CategoryDto categoryDto = new CategoryDto("File", names[i], Id, lastModified);
                 categoryDtoList.add(categoryDto);
             }
         }

@@ -26,7 +26,7 @@ import java.util.Map;
  * @since 2023-04-14
  */
 public interface IMaterialService extends IService<Material> {
-    Material addMaterial(String name, Integer projectId, MultipartFile file, String upperPath) throws SameMaterialNameException;
+    Material addMaterial(Integer projectId, MultipartFile file, String upperPath) throws SameMaterialNameException;
 
     FuzzyQueryDto fuzzyQuery(EsQueryDto esQueryDto) throws Exception;
 

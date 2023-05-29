@@ -16,19 +16,22 @@ public class CategoryDto {
     private String type;
     private String name;
     private Integer id;
+    private Long lastModified;
 
     //资料
-    public CategoryDto(String type, String name, Integer id) {
+    public CategoryDto(String type, String name, Integer id, Long lastModified) {
         this.type = type;
         this.name = name;
         this.id = id;
+        this.lastModified = lastModified;
     }
 
     //文件夹
-    public CategoryDto(String type, String name) {
+    public CategoryDto(String type, String name,Long lastModified) {
         this.type = type;
         this.name = name;
         this.id = null;
+        this.lastModified = lastModified;
     }
 
 }

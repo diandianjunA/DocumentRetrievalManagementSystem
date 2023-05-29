@@ -253,8 +253,8 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
                 // 执行查询操作，取出符合条件的实体列表
                 List<Material> materialList = materialMapper.selectList(queryWrapper);
                 Material material = materialList.get(0);
-                //删除数据库中的记录
-                materialMapper.deleteById(material.getId());
+                //删除数据库，文件夹，elasticsearch中的资料
+                materialService.deleteById(material.getId());
                 file.delete();
 
             } else if (file.isDirectory()) {

@@ -64,7 +64,7 @@ public class MaterialController {
     @PostMapping("/add")
     @ApiOperation("添加资料")
     public R<Material> addMaterial(MaterialFileDto materialFileDto,@ApiParam("相对路径")String upperPath) throws SameMaterialNameException , SameFileException {
-        Material material = materialService.addMaterial(materialFileDto.getName(), materialFileDto.getProjectId(), materialFileDto.getFile(), upperPath);
+        Material material = materialService.addMaterial(materialFileDto.getProjectId(), materialFileDto.getFile(), upperPath);
         return R.success(material);
     }
 
@@ -174,10 +174,34 @@ public class MaterialController {
             Integer currentId = UserHolder.getUser().getId();
             record.setUserId(currentId);
             record.setTime(LocalDateTime.now());
-            record.setInformation("删除"+material.getName()+"项目");
+            record.setInformation("删除"+material.getName()+"资料");
             recordService.save(record);
             return R.success("删除成功");
         } catch (Exception e) {
+            return R.success("删除失败");
+        }
+    }
+
+    @GetMapping("/deleteList")
+    @ResponseBody
+    @ApiOperation("在删除数据库上资料的同时，删除服务器上的文件")
+    public R deleteMaterialList(@ApiParam("资料id") String ids){
+        try {
+            ids=ids.substring(1,ids.length()-1);
+            String[] split = ids.split(",");
+            for (int i = 0; i < split.length; i++) {
+                Integer id = Integer.parseInt(split[i]);
+                Material material = materialService.getById(id);
+                materialService.deleteById(id);
+                Record record = new Record();
+                Integer currentId = UserHolder.getUser().getId();
+                record.setUserId(currentId);
+                record.setTime(LocalDateTime.now());
+                record.setInformation("删除"+material.getName()+"资料");
+                recordService.save(record);
+            }
+            return R.success("删除成功");
+        } catch (NumberFormatException e) {
             return R.success("删除失败");
         }
     }
@@ -199,7 +223,7 @@ public class MaterialController {
 
 
     //创建资料分类文件夹
-    @PostMapping("/createCategeory")
+    @GetMapping("/createCategeory")
     @ApiOperation("创建资料分类文件夹")
     public R createCategeory(@ApiParam("资料分类文件夹名称") String categoryName,@ApiParam("项目Id") Integer projectId, @ApiParam("上一级目录") String upperPath){
         try {
@@ -226,7 +250,6 @@ public class MaterialController {
     @PostMapping("/deleteCategory")
     @ApiOperation("删除资料分类文件夹")
     public R deleteFolder(@ApiParam("项目Id") Integer projectId, @ApiParam("上一级目录") String upperPath, @ApiParam("要删除的文件夹名称") String CategoryName) {
-
         try {
             String userName = UserHolder.getUser().getUserName();
             String userDir = UserPath+userName+"/";
@@ -253,7 +276,6 @@ public class MaterialController {
         String projectDir = userDir+project.getName();
         String categoryDir = projectDir+categoryPath;
         List<CategoryDto> categoryDtoList = materialService.getFromCategory(categoryDir);
-
         return R.success(categoryDtoList);
     }
 }
