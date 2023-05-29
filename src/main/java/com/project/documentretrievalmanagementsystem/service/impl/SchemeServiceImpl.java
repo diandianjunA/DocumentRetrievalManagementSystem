@@ -94,24 +94,11 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
     @Override
     //调用python脚本生成资料摘要
     //方案生成
-    public String generateMultiSummary(String materialIds, String ProjectIds, Integer length) throws IOException {
-        materialIds = materialIds.substring(1, materialIds.length() - 1);
-        ProjectIds = ProjectIds.substring(1, ProjectIds.length() - 1);
-        String[] materialIdList = materialIds.split(",");
-        String[] projectIdList = ProjectIds.split(",");
-        //转为int类型
-        Integer[] materialIdListInt = new Integer[materialIdList.length];
-        Integer[] projectIdListInt = new Integer[projectIdList.length];
-        for (int i = 0; i < materialIdList.length; i++) {
-            materialIdListInt[i] = Integer.parseInt(materialIdList[i]);
-        }
-        for (int i = 0; i < projectIdList.length; i++) {
-            projectIdListInt[i] = Integer.parseInt(projectIdList[i]);
-        }
+    public String generateMultiSummary(List<Integer> materialIds, List<Integer> ProjectIds, Integer length) throws IOException {
         //在bathT下创建名为MaterialList的txt文件
         String MaterialList = basePathT + "MaterialList.txt";
         //遍历资料id列表
-        for (Integer materialId : materialIdListInt) {
+        for (Integer materialId : materialIds) {
             //获取资料
             Material material = materialService.getById(materialId);
             //获取资料txt格式的地址
@@ -120,7 +107,7 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
             FileRdWt.writeTxt(MaterialList, txtLocation);
         }
         //遍历项目id列表
-        for(Integer projectId : projectIdListInt) {
+        for(Integer projectId : ProjectIds) {
             //获取项目名字
             Project project = projectService.getById(projectId);
             String projectName = project.getName();
@@ -163,7 +150,7 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
         File file = new File(MaterialList);
         file.delete();
         //删除项目名字.txt文件
-        for(Integer projectId : projectIdListInt) {
+        for(Integer projectId : ProjectIds) {
             //获取项目名字
             Project project = projectService.getById(projectId);
             String projectName = project.getName();

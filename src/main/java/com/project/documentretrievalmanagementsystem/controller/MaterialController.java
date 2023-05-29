@@ -182,15 +182,13 @@ public class MaterialController {
         }
     }
 
-    @GetMapping("/deleteList")
+    @PostMapping("/deleteList")
     @ResponseBody
     @ApiOperation("在删除数据库上资料的同时，删除服务器上的文件")
-    public R deleteMaterialList(@ApiParam("资料id") String ids){
+    public R deleteMaterialList(@RequestBody @ApiParam("资料id") List<Integer> ids){
         try {
-            ids=ids.substring(1,ids.length()-1);
-            String[] split = ids.split(",");
-            for (int i = 0; i < split.length; i++) {
-                Integer id = Integer.parseInt(split[i]);
+            for (int i = 0; i < ids.size(); i++) {
+                Integer id = ids.get(i);
                 Material material = materialService.getById(id);
                 materialService.deleteById(id);
                 Record record = new Record();
@@ -269,19 +267,17 @@ public class MaterialController {
     //同时删除数据库中的数据
     @PostMapping("/deleteCategoryList")
     @ApiOperation("批量删除资料分类文件夹")
-    public R deleteFolderList(@ApiParam("项目Id") Integer projectId, @ApiParam("上一级目录") String upperPath, @ApiParam("要删除的文件夹名称") String CategoryNames) {
+    public R deleteFolderList(@ApiParam("项目Id") @RequestBody DeleteDto dto) {
         try {
             String userName = UserHolder.getUser().getUserName();
             String userDir = UserPath+userName+"/";
             //根据项目id获取项目名称
-            Project project = projectService.getById(projectId);
+            Project project = projectService.getById(dto.getProjectId());
             String projectDir = userDir+project.getName();
-            String categoryDir = projectDir+upperPath;
-
-            CategoryNames = CategoryNames.substring(1,CategoryNames.length()-1);
-            String[] split = CategoryNames.split(",");
-            for (int i = 0; i < split.length; i++) {
-                String categoryName = split[i];
+            String categoryDir = projectDir+dto.getUpperPath();
+            List<String> deleteList = dto.getDeleteList();
+            for (int i = 0; i < deleteList.size(); i++) {
+                String categoryName = deleteList.get(i);
                 String categoryDir1 = categoryDir+categoryName;
                 schemeService.deleteCategoryFolder(categoryDir1);
             }

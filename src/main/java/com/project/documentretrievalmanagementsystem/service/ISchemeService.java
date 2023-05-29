@@ -22,7 +22,7 @@ public interface ISchemeService extends IService<Scheme> {
     public String generateSummary(Integer MaterialId, Integer length);
 
     //调用python脚本生成多文本资料摘要
-    public String generateMultiSummary(String MaterialIds, String ProjectIds, Integer length) throws IOException;
+    public String generateMultiSummary(List<Integer> MaterialIds, List<Integer> ProjectIds, Integer length) throws IOException;
 
     //数据库中scheme导出excel表格中(导出全部方案)
     XSSFWorkbook downloadExcel(List<Scheme> list);

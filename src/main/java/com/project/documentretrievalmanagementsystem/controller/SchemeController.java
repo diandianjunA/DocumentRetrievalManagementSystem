@@ -6,6 +6,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.project.documentretrievalmanagementsystem.common.R;
 import com.project.documentretrievalmanagementsystem.common.UserHolder;
+import com.project.documentretrievalmanagementsystem.dto.GenerateDto;
 import com.project.documentretrievalmanagementsystem.dto.MaterialDto;
 import com.project.documentretrievalmanagementsystem.dto.SchemeDto;
 import com.project.documentretrievalmanagementsystem.entity.Material;
@@ -72,10 +73,10 @@ public class SchemeController {
     }
 
     //多文本方案生成
-    @GetMapping("/generateMulti")
+    @PostMapping("/generateMulti")
     @ApiOperation("生成多文本方案")
-    public R<String> generateMultiSummary(@RequestParam("materialIds") String materialIds,  @RequestParam("projectIds") String ProjectIds, @RequestParam("length") Integer length) throws IOException {
-        String result = schemeService.generateMultiSummary(materialIds, ProjectIds, length);
+    public R<String> generateMultiSummary(@RequestBody GenerateDto generateDto) throws IOException {
+        String result = schemeService.generateMultiSummary(generateDto.getMaterialIds(), generateDto.getProjectIds(), generateDto.getLength());
         result=result.substring(2,result.length()-2).replace(" ","");
         return R.success(result);
     }
