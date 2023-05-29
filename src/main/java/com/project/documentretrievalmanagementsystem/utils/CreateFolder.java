@@ -1,16 +1,11 @@
 package com.project.documentretrievalmanagementsystem.utils;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.project.documentretrievalmanagementsystem.entity.Material;
 import com.project.documentretrievalmanagementsystem.mapper.MaterialMapper;
 import com.project.documentretrievalmanagementsystem.service.impl.MaterialServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.util.List;
 
 import static com.baomidou.mybatisplus.extension.toolkit.SimpleQuery.list;
 
@@ -30,10 +25,7 @@ import static com.baomidou.mybatisplus.extension.toolkit.SimpleQuery.list;
 // @Autowired：自动装配，可以对类成员变量、方法及构造函数进行标注，完成自动装配的工作。
 @Component
 public class CreateFolder {
-    @Autowired
-    public static MaterialServiceImpl materialService;
-    @Autowired
-    public static MaterialMapper materialMapper;
+
 
     //创建资料分类文件夹
     public static void createCategoryFolder(String Path, String categoryName) {
@@ -46,4 +38,16 @@ public class CreateFolder {
         }*/
     }
 
+    //获取资料分类文件夹下的所有文件的文件名
+    public static String[] getFilesName(String Path) {
+        File file = new File(Path);
+        String[] filesName = file.list();
+        //遍历文件夹下的所有文件，去除文件的后缀名
+        for (int i = 0; i < filesName.length; i++) {
+            filesName[i] = filesName[i].substring(0, filesName[i].lastIndexOf("."));
+        }
+        return filesName;
+    }
 }
+
+

@@ -1,6 +1,7 @@
 package com.project.documentretrievalmanagementsystem.service;
 
 import com.github.pagehelper.PageInfo;
+import com.project.documentretrievalmanagementsystem.dto.CategoryDto;
 import com.project.documentretrievalmanagementsystem.dto.EsQueryDto;
 import com.project.documentretrievalmanagementsystem.dto.FuzzyQueryDto;
 import com.project.documentretrievalmanagementsystem.dto.MaterialDto;
@@ -46,4 +47,6 @@ public interface IMaterialService extends IService<Material> {
     double similarity(Integer materialIdA, Integer materialIdB) throws IOException;
 
     FuzzyQueryDto fuzzyQueryCategory(EsQueryDto esQueryDto, String category) throws IOException;
+
+    List<CategoryDto> getFromCategory(String Path);
 }

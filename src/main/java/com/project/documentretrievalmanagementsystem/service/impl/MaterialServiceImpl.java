@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.project.documentretrievalmanagementsystem.common.UserHolder;
+import com.project.documentretrievalmanagementsystem.dto.CategoryDto;
 import com.project.documentretrievalmanagementsystem.dto.EsQueryDto;
 import com.project.documentretrievalmanagementsystem.dto.FuzzyQueryDto;
 import com.project.documentretrievalmanagementsystem.dto.MaterialDto;
@@ -81,7 +82,7 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
 
     //修改可以上传同名资料和相同文件
     @Override
-    public Material addMaterial(String name, Integer projectId, MultipartFile file ,String upperPath) throws SameMaterialNameException, SameFileException{
+    public Material addMaterial(String name, Integer projectId, MultipartFile file ,String upperPath) throws SameMaterialNameException {
         //判断该文件是否已经存在，不允许上传同名文件
         LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
         materialLambdaQueryWrapper.eq(Material::getName,name);
@@ -425,4 +426,45 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
             return fuzzyQueryDto;
         }
     }
+
+    @Override
+    //获取资料分类文件夹下的所有文件和文件夹
+    public List<CategoryDto> getFromCategory(String Path) {
+        File file = new File(Path);
+        File[] files = file.listFiles();
+        //判断为空
+        if (files == null) {
+            return null;
+        }
+        String[] names = file.list();
+        List<CategoryDto> categoryDtoList = new ArrayList<>();
+        //文件夹
+        for (int i = 0; i < files.length; i++) {
+            if (files[i].isDirectory()) {
+                CategoryDto categoryDto = new CategoryDto("Dir", names[i]);
+                categoryDtoList.add(categoryDto);
+            }else{
+                //判断name[i]是否为空
+                if(names[i].equals("")){
+                    continue;
+                }
+                names[i] = names[i].substring(0, names[i].lastIndexOf("."));
+                String name = names[i];
+                System.out.println(name);
+                //根据文件名查找数据库
+                LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                materialLambdaQueryWrapper.eq(Material::getName, name);
+                List<Material> list = list(materialLambdaQueryWrapper);
+                if(list.size()==0){
+                    continue;
+                }
+                Material material = list.get(0);
+                Integer Id = material.getId();
+                CategoryDto categoryDto = new CategoryDto("File", names[i], Id);
+                categoryDtoList.add(categoryDto);
+            }
+        }
+        return categoryDtoList;
+    }
+
 }

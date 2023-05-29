@@ -5,10 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.pagehelper.PageInfo;
 import com.project.documentretrievalmanagementsystem.common.R;
 import com.project.documentretrievalmanagementsystem.common.UserHolder;
-import com.project.documentretrievalmanagementsystem.dto.EsQueryDto;
-import com.project.documentretrievalmanagementsystem.dto.FuzzyQueryDto;
-import com.project.documentretrievalmanagementsystem.dto.MaterialDto;
-import com.project.documentretrievalmanagementsystem.dto.MaterialFileDto;
+import com.project.documentretrievalmanagementsystem.dto.*;
 import com.project.documentretrievalmanagementsystem.entity.Material;
 import com.project.documentretrievalmanagementsystem.entity.Record;
 import com.project.documentretrievalmanagementsystem.entity.Project;
@@ -245,4 +242,18 @@ public class MaterialController {
         }
     }
 
+    //获取该分类文件夹下的资料和文件夹
+    @GetMapping("/getFromCategory")
+    @ApiOperation("获取该分类文件夹下的资料和文件夹")
+    public R<List<CategoryDto>> getFromCategory(@ApiParam("项目Id") Integer projectId, @ApiParam("要查询的文件夹路径") String categoryPath){
+        String userName = UserHolder.getUser().getUserName();
+        String userDir = UserPath+userName+"/";
+        //根据项目id获取项目名称
+        Project project = projectService.getById(projectId);
+        String projectDir = userDir+project.getName();
+        String categoryDir = projectDir+categoryPath;
+        List<CategoryDto> categoryDtoList = materialService.getFromCategory(categoryDir);
+
+        return R.success(categoryDtoList);
+    }
 }

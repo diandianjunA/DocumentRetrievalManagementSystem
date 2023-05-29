@@ -25,6 +25,9 @@ public interface MaterialMapper extends BaseMapper<Material> {
     @Select("select * from material where id = #{id}")
     Material selcetById(Integer id);
 
+    @Select("select * from material where name = #{name}")
+    Material selectByName(String name);
+
     @Select("select * from material where loc_in_user = #{locInUser}")
     Material selectByLocInUser(String locInUser);
 

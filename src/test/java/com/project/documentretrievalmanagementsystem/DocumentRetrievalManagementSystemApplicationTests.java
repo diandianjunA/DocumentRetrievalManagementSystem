@@ -1,16 +1,12 @@
 package com.project.documentretrievalmanagementsystem;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.pagehelper.PageInfo;
-import com.project.documentretrievalmanagementsystem.controller.MaterialController;
-import com.project.documentretrievalmanagementsystem.dto.EsQueryDto;
-import com.project.documentretrievalmanagementsystem.dto.FuzzyQueryDto;
-import com.project.documentretrievalmanagementsystem.dto.MaterialDto;
-import com.project.documentretrievalmanagementsystem.dto.ProjectDto;
+import com.project.documentretrievalmanagementsystem.dto.*;
 import com.project.documentretrievalmanagementsystem.entity.Material;
 import com.project.documentretrievalmanagementsystem.mapper.MaterialMapper;
 import com.project.documentretrievalmanagementsystem.mapper.UserMapper;
 import com.project.documentretrievalmanagementsystem.service.IMaterialService;
-import com.project.documentretrievalmanagementsystem.service.ISchemeService;
 import com.project.documentretrievalmanagementsystem.service.impl.ProjectServiceImpl;
 import com.project.documentretrievalmanagementsystem.service.impl.SchemeServiceImpl;
 import com.project.documentretrievalmanagementsystem.utils.CreateFolder;
@@ -19,20 +15,17 @@ import io.github.swagger2markup.Swagger2MarkupConfig;
 import io.github.swagger2markup.Swagger2MarkupConverter;
 import io.github.swagger2markup.builder.Swagger2MarkupConfigBuilder;
 import io.github.swagger2markup.markup.builder.MarkupLanguage;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.util.List;
+
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @RunWith(org.springframework.test.context.junit4.SpringRunner.class)
@@ -116,6 +109,32 @@ class DocumentRetrievalManagementSystemApplicationTests {
     void similarity() throws Exception {
         double similarity = projectService.similarity(3, 4);
         System.out.println(similarity);
+    }
+
+    @Test
+    void getFromCategory() throws Exception {
+        String []name = com.project.documentretrievalmanagementsystem.utils.CreateFolder.getFilesName("D:\\code\\source\\user\\mhc\\重构测试1\\");
+        for (String s : name) {
+            System.out.println(s);
+        }
+        LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        materialLambdaQueryWrapper.eq(Material::getName, "测试1");
+        Material material = materialMapper.selectOne(materialLambdaQueryWrapper);
+        System.out.println(material);
+
+        List<CategoryDto> categoryDtos= materialService.getFromCategory("D:\\code\\source\\");
+        for (CategoryDto categoryDto : categoryDtos) {
+            System.out.println(categoryDto);
+        }
+    }
+
+    @Test
+    void getMaterial() throws Exception {
+        LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        String name = "测试1";
+        materialLambdaQueryWrapper.eq(Material::getName, name);
+        Material material = materialMapper.selectOne(materialLambdaQueryWrapper);
+        System.out.println(material);
     }
 
     @Test
