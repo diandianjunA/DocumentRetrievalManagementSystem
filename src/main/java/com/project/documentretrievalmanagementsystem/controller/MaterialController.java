@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
@@ -63,8 +64,8 @@ public class MaterialController {
 
     @PostMapping("/add")
     @ApiOperation("添加资料")
-    public R<Material> addMaterial(MaterialFileDto materialFileDto,@ApiParam("相对路径")String upperPath) throws SameMaterialNameException , SameFileException {
-        Material material = materialService.addMaterial(materialFileDto.getProjectId(), materialFileDto.getFile(), upperPath);
+    public R<Material> addMaterial(@RequestParam("projectId") Integer projectId,@RequestParam("file") MultipartFile file,@RequestParam("upperPath") String upperPath) throws SameMaterialNameException , SameFileException {
+        Material material = materialService.addMaterial(projectId,file,upperPath);
         return R.success(material);
     }
 

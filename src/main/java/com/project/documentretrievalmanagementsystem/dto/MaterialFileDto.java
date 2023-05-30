@@ -9,4 +9,5 @@ import org.springframework.web.multipart.MultipartFile;
 @Data
 public class MaterialFileDto extends Material {
     MultipartFile file;             //用于上传的文件
+    String upperPath;               //上级目录
 }
