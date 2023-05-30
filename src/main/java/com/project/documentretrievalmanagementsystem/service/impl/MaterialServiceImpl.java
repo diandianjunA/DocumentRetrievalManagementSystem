@@ -218,7 +218,7 @@ public class MaterialServiceImpl extends ServiceImpl<MaterialMapper, Material> i
         if(file.exists()){
             file.delete();
         }
-        String txtLocation = basePathT + material.getName() + ".txt";
+        String txtLocation = material.getTxtLocation();
         File txtFile = new File(txtLocation);
         if(txtFile.exists()){
             txtFile.delete();

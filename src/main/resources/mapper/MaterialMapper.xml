@@ -20,7 +20,7 @@
         name,
         project_id,
         location,
-        loc_belong_user,
+        loc_in_user,
         vector_location,
         user_id
         from material
