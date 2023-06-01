@@ -129,6 +129,12 @@ class DocumentRetrievalManagementSystemApplicationTests {
     }
 
     @Test
+    void generateSummary2() throws Exception{
+        String result = schemeService.generateSummary(55,50);
+        System.out.println(result);
+    }
+
+    @Test
     void getMaterial() throws Exception {
         LambdaQueryWrapper<Material> materialLambdaQueryWrapper = new LambdaQueryWrapper<>();
         String name = "测试1";

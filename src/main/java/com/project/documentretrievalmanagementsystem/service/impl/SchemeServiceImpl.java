@@ -64,16 +64,15 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
         //获取资料地址
         String location = material.getLocation();
         //将资料转换为txt格式
-        TransTotxt.DocxToTxt(location,basePathT);
+        //TransTotxt.DocxToTxt(location,basePathT);
         String result = "";
-        String Path = basePathT+"scheme.txt";
+        String Path = material.getTxtLocation();
         try {
             //开启了命令执行器，输入指令执行python脚本
             Process process = Runtime.getRuntime()
                     .exec(pythonPath+" " +
                             scriptPath+"/predict.py " +
                             "--model_path "+modelPath+" " +
-                            "--file_type " + 0 + " " +
                             "--file_path "+Path+" " +
                             "--sum_min_len "+length);
 
