@@ -73,7 +73,7 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
             //读取vector文件
             StringBuffer vectorA = FileRdWt.readTxt(vectorLocation);
             String[] temp = vectorA.toString().split(",");
-            for (int i = 0; i < temp.length; i++) {
+            for (int i = 0; i < vecA.length; i++) {
                 vecA[i] += Double.parseDouble(temp[i]);
             }
         }
@@ -86,7 +86,7 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
             //读取vector文件
             StringBuffer vectorB = FileRdWt.readTxt(vectorLocation);
             String[] temp = vectorB.toString().split(",");
-            for (int i = 0; i < temp.length; i++) {
+            for (int i = 0; i < vecB.length; i++) {
                 vecB[i] += Double.parseDouble(temp[i]);
             }
         }

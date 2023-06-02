@@ -51,7 +51,7 @@ public class FileServiceImpl implements FileService {
         }
         // 5.将上传的文件保存到指定的路径
         try {
-            inputStreamToFile((FileInputStream)file.getInputStream(),new File(Path + originalFilename));
+            inputStreamToFile((InputStream)file.getInputStream(),new File(Path + originalFilename));
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -128,6 +128,30 @@ public class MaterialController {
         }
     }
 
+    @GetMapping("/getContentById")
+    @ApiOperation("获取资料内容")
+    public void getContentById(@ApiParam("资料信息") Integer id, HttpServletResponse response){
+        try {
+            Material material = materialService.getById(id);
+            String location = material.getLocation();
+            // 1.创建一个文件输入流用于读取图片
+            FileInputStream fileInputStream = new FileInputStream(location);
+            // 2.创建一个输出流，通过输出流将文件写回浏览器，在浏览器中展示图片
+            ServletOutputStream outputStream = response.getOutputStream();
+            int len = 0;
+            byte[] bytes = new byte[1024];
+            while ((len = fileInputStream.read(bytes)) != -1){
+                outputStream.write(bytes,0,len);
+                outputStream.flush();
+            }
+            // 3.关闭流
+            outputStream.close();
+            fileInputStream.close();
+        } catch (IOException e) {
+            throw new FileDownloadException("文件下载失败");
+        }
+    }
+
     @GetMapping(value = "/getDownload")
     @ApiOperation("下载资料")
     public ResponseEntity<byte[]> getDownload(@ApiParam("资料信息") String location, HttpServletResponse response) throws IOException {
@@ -138,9 +162,33 @@ public class MaterialController {
         }
     }
 
+    @GetMapping(value = "/getDownload1")
+    @ApiOperation("下载资料")
+    public ResponseEntity<byte[]> getDownload(@ApiParam("资料信息") Integer id, HttpServletResponse response) throws IOException {
+        try {
+            Material material = materialService.getById(id);
+            String location = material.getLocation();
+            return fileService.download(response, location);
+        } catch (IOException e) {
+            throw new FileDownloadException("文件下载失败");
+        }
+    }
+
     @GetMapping(value = "/getDownload2")
     @ApiOperation("下载资料")
     public void getDownload2(@ApiParam("资料信息") String location, HttpServletResponse response) throws IOException {
+        try {
+            fileService.downloadFile(response, location);
+        } catch (IOException e) {
+            throw new FileDownloadException("文件下载失败");
+        }
+    }
+
+    @GetMapping(value = "/getDownload3")
+    @ApiOperation("下载资料")
+    public void getDownload3(@ApiParam("资料信息") Integer id, HttpServletResponse response) throws IOException {
+        Material material = materialService.getById(id);
+        String location = material.getLocation();
         try {
             fileService.downloadFile(response, location);
         } catch (IOException e) {
@@ -186,7 +234,8 @@ public class MaterialController {
     @PostMapping("/deleteList")
     @ResponseBody
     @ApiOperation("在删除数据库上资料的同时，删除服务器上的文件")
-    public R deleteMaterialList(@RequestBody @ApiParam("资料id") List<Integer> ids){
+    public R deleteMaterialList(@RequestBody @ApiParam("资料id") DeleteListDto deleteListDto){
+        List<Integer> ids = deleteListDto.getIds();
         try {
             for (int i = 0; i < ids.size(); i++) {
                 Integer id = ids.get(i);

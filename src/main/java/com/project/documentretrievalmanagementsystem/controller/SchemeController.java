@@ -76,7 +76,10 @@ public class SchemeController {
     @PostMapping("/generateMulti")
     @ApiOperation("生成多文本方案")
     public R<String> generateMultiSummary(@RequestBody GenerateDto generateDto) throws IOException {
-        String result = schemeService.generateMultiSummary(generateDto.getMaterialIds(), generateDto.getProjectIds(), generateDto.getLength());
+//        String result = schemeService.generateMultiSummary(generateDto.getMaterialIds(), generateDto.getProjectIds(), generateDto.getLength());
+//        result=result.substring(2,result.length()-2).replace(" ","");
+//        return R.success(result);
+        String result = schemeService.generateSummary(generateDto.getMaterialIds().get(0),generateDto.getLength());
         result=result.substring(2,result.length()-2).replace(" ","");
         return R.success(result);
     }
@@ -85,14 +88,27 @@ public class SchemeController {
     @PostMapping("/save")
     @ApiOperation("保存方案")
     public R<Scheme> saveScheme(@RequestBody Scheme scheme){
-        Integer currentId = UserHolder.getUser().getId();
-        scheme.setUserId(currentId);
-        schemeService.save(scheme);
-        Record record = new Record();
-        record.setUserId(currentId);
-        record.setTime(LocalDateTime.now());
-        record.setInformation("删除"+scheme.getName()+"项目");
-        recordService.save(record);
+        LambdaQueryWrapper<Scheme> schemeLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        schemeLambdaQueryWrapper.eq(Scheme::getProjectId,scheme.getProjectId());
+        Scheme scheme1 = schemeService.getOne(schemeLambdaQueryWrapper);
+        if(scheme1==null) {
+            Integer currentId = UserHolder.getUser().getId();
+            scheme.setUserId(currentId);
+            schemeService.save(scheme);
+            Record record = new Record();
+            record.setUserId(currentId);
+            record.setTime(LocalDateTime.now());
+            record.setInformation("保存"+scheme.getName()+"方案");
+            recordService.save(record);
+        }else{
+            scheme.setId(scheme1.getId());
+            schemeService.updateById(scheme);
+            Record record = new Record();
+            record.setUserId(UserHolder.getUser().getId());
+            record.setTime(LocalDateTime.now());
+            record.setInformation("更新"+scheme.getName()+"方案");
+            recordService.save(record);
+        }
         return R.success(scheme);
     }
 
@@ -131,39 +147,15 @@ public class SchemeController {
         output.close();
     }
 
-    @GetMapping("/getPaged")
-    @ApiOperation("获取方案分页数据")
-    public R<PageInfo<Scheme>> getPaged(@ApiParam("第几页")Integer pageNum, @ApiParam("一页多少条数据")int pageSize, @ApiParam("导航栏共展示几页")int navSize,@ApiParam("方案名称") String schemeName, @ApiParam("资料名称")String materialName,@ApiParam("资料id") Integer materialId, @ApiParam("资料对应的项目id") Integer projectId, @ApiParam("项目名称")String projectName){
-        PageHelper.startPage(pageNum,pageSize);
-        Integer currentId = UserHolder.getUser().getId();
+    @GetMapping("/getByProjectId")
+    @ApiOperation("获取方案数据")
+    public R<Scheme> getByProjectId(@ApiParam("项目id") Integer projectId){
         LambdaQueryWrapper<Scheme> schemeLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        if(schemeName!=null&&!schemeName.equals("")){
-            schemeLambdaQueryWrapper.or().like(Scheme::getName,schemeName);
-        }
-        if(projectId!=null){
-            schemeLambdaQueryWrapper.and(i->i.eq(Scheme::getProjectId,projectId));
-        }
-        if(projectName!=null&& !projectName.equals("")){
-            LambdaQueryWrapper<Project> projectLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            projectLambdaQueryWrapper.like(Project::getName,projectName);
-            for (Project project : projectService.list(projectLambdaQueryWrapper)) {
-                schemeLambdaQueryWrapper.or().eq(Scheme::getProjectId,project.getId());
-            }
-        }
-        schemeLambdaQueryWrapper.and(i->i.eq(Scheme::getUserId,currentId));
-        List<Scheme> list = schemeService.list(schemeLambdaQueryWrapper);
-        Map<Integer, Project> projectMap = projectService.getProjectMap();
-        Map<Integer, Material> materialMap = materialService.getMaterialMap();
-        Map<Integer, User> userMap = userService.getUserMap();
-        ArrayList<SchemeDto> schemeDtos = new ArrayList<>();
-        for(Scheme scheme:list){
-            SchemeDto schemeDto = new SchemeDto(scheme);
-            schemeDto.setProjectName(projectMap.get(scheme.getProjectId()).getName());
-            schemeDto.setUserName(userMap.get(scheme.getUserId()).getUserName());
-            schemeDtos.add(schemeDto);
-        }
-        return R.success(new PageInfo<>(schemeDtos,navSize));
+        schemeLambdaQueryWrapper.eq(Scheme::getProjectId,projectId);
+        Scheme scheme = schemeService.getOne(schemeLambdaQueryWrapper);
+        return R.success(scheme);
     }
+
 
     @GetMapping("/delete")
     @ApiOperation("删除方案")

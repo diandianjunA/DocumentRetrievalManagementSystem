@@ -19,15 +19,15 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/document?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
     username: root
-    password: 188158
+    password: Xjs02220012
 
 my:
   basePath: D:/code/source/material/
   UserPath: D:/code/source/user/
-  basePathT: D:/code/source/txt/
-  basePathMaterial: D:/code/source/txt/material/
-  basePathVector: D:/code/source/txt/vector/
+  basePathT: D:/code/source/TXT/
+  basePathMaterial: D:/code/source/TXT/material/
+  basePathVector: D:/code/source/TXT/vector/
 
-  modelPath: D:/MHC/pycharm/pythonProject/cpt-base
-  pythonPath: E:/develop/Anaconda/Anaconda3/envs/pytorch/python.exe
-  scriptPath: D:/MHC/pycharm/pythonProject
+  modelPath: D:/code/source/document_retrieval_management_system/cpt-base
+  pythonPath: D:/anaconda/envs/document/python.exe
+  scriptPath: D:/code/source/document_retrieval_management_system/cpt-version

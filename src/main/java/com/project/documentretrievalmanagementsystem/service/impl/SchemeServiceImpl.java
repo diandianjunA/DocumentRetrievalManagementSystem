@@ -73,6 +73,7 @@ public class SchemeServiceImpl extends ServiceImpl<SchemeMapper, Scheme> impleme
                     .exec(pythonPath+" " +
                             scriptPath+"/predict.py " +
                             "--model_path "+modelPath+" " +
+//                            "--file_type " + 0 + " " +
                             "--file_path "+Path+" " +
                             "--sum_min_len "+length);
 
