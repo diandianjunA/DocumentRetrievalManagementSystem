@@ -54,7 +54,7 @@ class IMaterialServiceTest {
     HttpSession session;
 
 
-   /* @Test
+    @Test
     public void addMaterial() {
         try {
 
@@ -66,12 +66,12 @@ class IMaterialServiceTest {
             MultipartFile multipartfile = new MockMultipartFile("hello.txt", filename,
                     "text/plain",
                     IOUtils.toByteArray(input));
-            materialService2.addMaterial("test", 1, multipartfile);
+            materialService2.addMaterial(1,multipartfile , "test");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-    }*/
+    }
 
     @Test
     public void deleteMaterial() {
